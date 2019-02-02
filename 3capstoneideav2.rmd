@@ -1,0 +1,45 @@
+<center>
+#Capstone Ideas
+</center>
+
+
+######By Justin Huang
+
+Create a document (on Google Doc or Github) with three ideas for your capstone project. Your writeup should contain a short blurb about each of your ideas. The blurb should describe a problem and the data you¡¯ll be using to solve it.
+
+
+**1. NBA player stats vs NBA salaries **
+
+* Comparing NBA player stats vs there NBA salaries.  
+    + Exploring if betters stats is positively correlated with salary.
+    + Will explore external factors that might affect salaries.
+    
+    
+    
+* Source:
+<center>https://www.basketball-reference.com/</center>
+* Will run a multiple regression model that will try to predict an NBA players salary based on their statistics as well as external factors. 
+**2. Online digital comics **
+* Looking at trends of digital comics sales on comixology.
+    + Find out which publishers gave the best prices.
+    + Best avg ratings for a comic.
+    + Look at the big names of comics Marvel and DC comics.
+    + Which age bracket is trending.   
+    + Mean price of comics.  
+    
+    
+    
+* Source:
+    
+<center>https://www.comixology.com/</center>
+* Comixology is an amazon owned company that has had 200 million downloads since its launch.  IT has over 100000 comic books, graphic novels and mangas. 
+* Will run a regression to determine which comics were popular, which sold well, what is the current trend in comic books.  
+**3. Predicting Housing Price, a kaggle competition project. **
+* Using the Boston housing market data to predict the price of a house based on its features.  
+    + Number of bathrooms
+    + Windows
+    + Location etc...
+    
+    
+* Source:
+<center>https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data</center>
