@@ -1,0 +1,2855 @@
+---
+title: "Data Story"
+author: "Justin Huang"
+date: "1/29/2019"
+output:   
+  html_document:
+    keep_md: yes
+  pdf_document: default
+---
+
+```{r echo = FALSE}
+data<-read.csv("2000_2018_nba.csv")
+data<- data[,-1]
+```
+
+###**Introduction**
+
+Moneyball a book by Michael Lewis was a story about the Oakland Athletics a team that was limited to a small budget and was able to achieve success in Major League Baseball by using team analytics to choose the right players that could produce a successful regular season.  Many NBA teams nowadays use team, player and game analytics to try to find an advantage in a competitive basketball league.  As a general manager, scout, owner and even avid fan the quest to put together the perfect team that remains relatively close to the salary cap is the goal for the regular season.  Ultimately choosing the right players to put together a championship dynasty is the goal for every city that has a NBA team.  
+
+**What we are trying to solve and explore:**
+
+Therefore the question that we are trying to solve is, whether Moneyball will work in the NBA for a regular season like it did for the Oakland Athletics and can we identify trends and build upon these findings. 
+
+The goal is to make better informed decisions in salary contract talks as well as scouting in the free agency market.  Unlike baseball the NBA has a soft cap which will allow teams to have exceptions and be able to spend money on players even though they are past the salary cap.  A most recent notable signing is Demarcus Cousins for the Golden State Warriors.  (He was signed using the mid-level exception for the 2018-2019 season.) 
+
+###**Data Wrangling and Cleaning**
+
+The data was collected from the following sources. 
+
+  [BasketBall Reference](https://www.basketball-reference.com)
+
+  [Hoops Hype](https://hoopshype.com)
+
+  [NBA STATs](https://stats.nba.com)
+
+  [Patricia Bender](https://www.eskimo.com/~pbender/)
+
+  [Land of Basketball](https://www.landofbasketball.com)
+
+  [CBA Agreements](http://www.cbafaq.com/salarycap.htm)
+
+The hoops hype data contained the salary data for NBA players from 2001-2019.  The 2000 salary data was collected from Particia benders website.  Salary data collection was collected by using rvest to web scrap the table from the two websites.  
+
+```{r eval = FALSE}
+salary_2018 <- read_html("https://hoopshype.com/salaries/players/2017-2018/") %>%
+  html_nodes("table") %>%  html_table
+```
+
+Salary data was checked by looking a business insider article which took a look at some of the top paid players in the NBA. 
+
+College, age and weight data was collected through NBA stats and loaded through a csv file.
+NBA player statistics was collected through Basketball reference.  The website provided csv files for player statistics.
+
+Land of Basketball provided data on award and number of team wins.  
+
+The NBA collective bargaining agreement and sample contract of NBA players provided insights on the structure of NBA contracts.
+
+The following packages were used to clean the data.
+
+```{r message = FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(stringr)
+library(data.table)
+library(ggrepel)
+library(directlabels)
+library(gridExtra)
+options(max.print = 999999999)
+options(scipen=12)
+```
+
+**Initial Data cleaning**
+
+The data for the 2000 to 2019 data was cleaned year by year since there were many unique names for each season which required me to search for the name using grepl and changing it.  The data was extremely raw and using different sources yielded different spellings of players and teams.  
+
+The first step was to remove unnecessary columns that weren’t going to be used.  We sure to change the column name for the players names to names for before doing a full join. 
+
+```{r eval = FALSE}
+# clean up stats
+#remove rank column 
+stat <- stat[,-c(1,5)]
+#Seperate player and player id 
+stat <- stat %>% separate(Player, c("player_name", "player_id"),"\\\\")
+##Clean up to remove . from stat_2018
+grep("\\.", stat$player_name, value = TRUE)
+stat$player_name<- gsub("\\.", "", stat$player_name)
+grep("\\.", stat$player_name, value = TRUE)
+names(stat)
+stat$Age <- as.numeric(stat$Age)
+colnames(stat)[30] <- "ppg"
+##Clean up salary 
+salary <- salary[,-c(3)]
+#salary <- salary[-1,]
+colnames(salary) <- c("player_name", "salary")
+rownames(salary) <- NULL
+grep("\\.",salary$player_name)
+grep(".Jr$", salary$player_name, value = TRUE) # 3 Jrs 
+#remove columns from age data 
+age <- age[,-c(3,11:14,16:20)]
+#remove rows that have Player 
+y<-which(age$PLAYER == "PLAYER")
+age <- age[-c(y),]
+#Change PLAYER to player_name 
+names(age)[1]<-paste("player_name") 
+```
+
+Had to clean the data to remove all “-“, “*”, “,” from the name columns.  Also, had to add in JR or III for data sources like Basketball reference that removes the suffix. 
+
+Used grepl and gsub to accomplish this.  
+
+```{r eval = FALSE}
+#getting rid of periods in name 
+grep("\\*",age$player_name, value = T)
+grep("\\*",stat$player_name, value = T)
+stat$player_name <- gsub("\\*","",stat$player_name)
+grep("Ray Allen",stat$player_name, value =T)
+grep("\\*",salary$player_name, value = T)
+grep("\\.",age$player_name)
+age$player_name <- gsub("\\.","", age$player_name)
+grep(".Jr$", age$player_name, value = TRUE) # 6 Jrs here.  
+grep("Glen Rice", age$player_name, value = TRUE)
+grep(".Jr$",stat$player_name, value = TRUE) 
+#look through all stats for which one junior is missing for a total of 13 was missing in stats. 
+grep(".Jr$", salary$player_name, value = TRUE)
+##### Filling all the juniors 
+#stat
+grep("Roger Mason",stat$player_name, value = TRUE)
+stat$player_name<-gsub("Roger Mason", "Roger Mason Jr", stat$player_name)
+#testing salary 
+grep("Roger Mason",salary$player_name, value = TRUE)
+salary$player_name<-gsub("Roger Mason", "Roger Mason Jr", salary$player_name)
+#-------------------------
+```
+
+
+There were also, weird name spellings like Nene Hilario that was spelled as Nene, or other international players who had their country passport name instead of their NBA USA player name.  For example Hedo Turkoglu as Hidayet Turkloglu.  Changed all basketball player names to their USA player names.  As well as changed Ron Artests name to Metta World Peace. 
+
+This was accomplished by using gusb and grepl as well as which.
+
+```{r eval = FALSE}
+#nene hilario weird spelling 
+grep("^Ne", stat$player_name, value = TRUE)
+grep("^Nene", age$player_name, value = TRUE) # located in age 
+grep("^Ne", age$player_name)
+age$player_name <- gsub("Nene", "Nene Hilario", age$player_name) 
+grep("^Nen", salary$player_name, value = TRUE)
+salary$player_name <- gsub("Nenê", "Nene Hilario", salary$player_name)
+```
+
+There were some issues with duplicate names as well due to player movement for that year.  Removed the duplicated names and categorized the player into the last team he played for that season.  
+This was accomplished using which, duplicated and the dplyer package using the pipe operator to group_by and filter. 
+
+```{r eval = FALSE}
+#multiple trade scenarios where a player ended up on different teams 
+which(duplicated(stat$player_name))
+sum(duplicated(stat$player_name))
+stat %>% group_by(player_name) %>% filter(n() > 1)
+a<-which(duplicated(stat$player_name))
+#Will use last team played for when doing full join so remove duplicates 
+stat<- stat[-c(a),]
+rownames(stat) <- NULL 
+```
+
+After performing a full join which was joined by the players name, fixed the problem of height which was loaded in as a date instead of feet and inches.
+
+Used grepl and gsub to change this. 
+
+```{r eval = FALSE}
+#time to combine all of them 
+data <- full_join(salary, age, by = "player_name")
+data <- full_join(data, stat, by = "player_name")
+
+#have to fill in the N/As now.  
+colnames(data)[2] <- "salary"
+colnames(data)[39] <- "ppg"
+sum(is.na(data$salary)) 
+which(is.na(data$salary))
+sum(is.na(data$TEAM)) 
+sum(is.na(data$ppg)) 
+
+#find duplicated rows
+which(duplicated(data$player_name))
+
+#change the height data so it's not in date format 
+data$HEIGHT <- gsub("Jun", "6", data$HEIGHT, fixed=TRUE)
+data$HEIGHT <- gsub("Jul", "7", data$HEIGHT, fixed=TRUE)
+data$HEIGHT <- gsub("May", "5", data$HEIGHT, fixed=TRUE)
+
+
+data$HEIGHT[which(data$HEIGHT == "11-6")] = '6-11"'
+data$HEIGHT[which(data$HEIGHT == "10-6")] = '6-10"'
+data$HEIGHT[which(data$HEIGHT == "9-6")] = '6-9"'
+data$HEIGHT[which(data$HEIGHT == "8-6")] = '6-8"'
+data$HEIGHT[which(data$HEIGHT == "7-6")] = '6-7"'
+data$HEIGHT[which(data$HEIGHT == "5-6")] = '6-5"'
+data$HEIGHT[which(data$HEIGHT == "4-6")] = '6-4"'
+data$HEIGHT[which(data$HEIGHT == "3-6")] = '6-3"'
+data$HEIGHT[which(data$HEIGHT == "2-6")] = '6-2"'
+data$HEIGHT[which(data$HEIGHT == "1-6")] = '6-1"'
+data$HEIGHT[which(data$HEIGHT == "6-00")] = '6-0"'
+data$HEIGHT[which(data$HEIGHT == "11-5")] = '5-11"'
+data$HEIGHT[which(data$HEIGHT == "10-5")] = '5-10"'
+data$HEIGHT[which(data$HEIGHT == "9-5")] = '5-9"'
+data$HEIGHT[which(data$HEIGHT == "8-5")] = '5-8"'
+data$HEIGHT[which(data$HEIGHT == "7-5")] = '5-7"'
+data$HEIGHT[which(data$HEIGHT == "1-7")] = '7-1"'
+data$HEIGHT[which(data$HEIGHT == "2-7")] = '7-2"'
+data$HEIGHT[which(data$HEIGHT == "3-7")] = '7-3"'
+data$HEIGHT[which(data$HEIGHT == "7-00")] = '7-0"'
+data$HEIGHT[which(data$HEIGHT == "6'6")] = "6'6\""
+
+#change the symbols - to 4'2"
+data$HEIGHT <- gsub("-", "'", data$HEIGHT, fixed=TRUE)
+grep("[I]", data$player_name, value = TRUE)
+
+#--------------------------#
+```
+
+There were several NAs in the rows so created another CSV file to load in the missing data.  Information for the missing player statistics was loaded from basketball reference again and for the salary was loaded from Patricia Bender’s data archive.  
+
+Used whichis.na 
+
+```{r eval =FALSE}
+miss_sal<-read.csv("missing_salary_2000.csv", header = F)
+
+colnames(miss_sal)[1:39] <- c("player_name", "salary", "TEAM",  "HEIGHT", "WEIGHT", "COLLEGE", "COUNTRY", "DRAFT.YEAR",
+                              "DRAFT.ROUND", "DRAFT.NUMBER", "NETRTG", "player_id", "Pos", "Age", "G", "GS", "MP", "FG", "FGA",
+                              "FG.", "X3P", "X3PA", "X3P.", "X2P", "X2PA", "X2P.", "eFG.", "FT", "FTA", "FT.", "ORB", "DRB",
+                              "TRB", "AST", "STL", "BLK", "TOV", "PF", "ppg") 
+x<-which(is.na(data$salary))
+data <- data[-c(x),]
+data<-rbind(data,miss_sal)
+```
+
+The stringr package was used to format the salary column and convert it to a numeric.  Inflation data was loaded in using a full_join. 
+
+```{r eval = FALSE}
+#Making salary into numeric 
+data$salary <- str_replace(data$salary, "\\$", "")
+data$salary <- str_replace_all(data$salary, ",", "")
+data$salary <- as.numeric(data$salary)
+rownames(data) <- NULL 
+```
+
+Then filled in the awards section for most valuable player, All NBA team, defensive player of the year, sixth man, rookie of the year, all defensive team from land of basketball. 
+
+```{r eval = FALSE}
+# make a column if they won the awards the previous year.  #make columns for awards
+test <- data
+test["MVP"] <- "NO"
+test["MIP"] <- "NO"
+test["Sixth_man"] <- "NO"
+test["DPOY"] <- "NO"
+test["ROY"] <- "NO"
+test["NBA_1"] <- "NO"
+test["NBA_2"] <- "NO"
+test["NBA_3"] <- "NO"
+test["Rookie_1"] <- "NO"
+test["Rookie_2"] <- "NO"
+test["Def_1"] <- "NO"
+test["Def_2"] <- "NO"
+
+#Nba first team
+
+a1<-grep("Tim Duncan", test$player_name)
+test[a1, 48] <- "YES"
+a2<-grep("Karl Malone", test$player_name)
+test[a2, 48] <- "YES" 
+a3<-grep("Allen Iverson", test$player_name)
+test[a3, 48] <- "YES"
+a4<-grep("Jason Kidd", test$player_name)
+test[a4,48] <- "YES"
+a5<-grep("Alonzo Mourning", test$player_name)
+test[a5, 48] <- "YES" 
+
+```
+
+
+This process was then repeated going through the 2000 to 2019 NBA season. 
+
+Rbind was used to bind all the seasons together. Then the data columns were renamed.  
+
+```{r eval = FALSE}
+data_2018<-read.csv("2018_data.csv")
+data_2017<-read.csv("2017_data.csv")
+data_2016<-read.csv("2016_data.csv")
+data_2015<-read.csv("2015_data.csv")
+data_2014<-read.csv("2014_data.csv")
+data_2013<-read.csv("2013_data.csv")
+data_2012<-read.csv("2012_data.csv")
+data_2011<-read.csv("2011_data.csv")
+data_2010<-read.csv("2010_data.csv")
+data_2009<-read.csv("2009_data.csv")
+data_2008<-read.csv("2008_data.csv")
+data_2007<-read.csv("2007_data.csv")
+data_2006<-read.csv("2006_data.csv")
+data_2005<-read.csv("2005_data.csv")
+data_2004<-read.csv("2004_data.csv")
+data_2003<-read.csv("2003_data.csv")
+data_2002<-read.csv("2002_data.csv")
+data_2001<-read.csv("2001_data.csv")
+data_2000<-read.csv("2000_data.csv")
+
+
+data<-rbind(data_2019,data_2018,data_2017,data_2016,data_2015,data_2014,data_2013,data_2012,data_2011,data_2010, data_2009,
+            data_2008, data_2007, data_2006, data_2005, data_2004, data_2003, data_2002, data_2001, data_2000)
+#Error in match.names(clabs, names(xi)) : 
+#names do not match previous names
+colnames(data_2019) == colnames(data_2000)
+names(data)
+```
+
+###**Data Cleaning after initial Data exploration:** 
+
+We ended up having 9015 observations.  However, I decided to remove the 2019 data set since the season was still going on and I did not want to include an incomplete season with the rest of the data.  
+
+Also, ran a check for players who were injured, waived or released.  Salaries would still be included on the team due to contractual obligations.  (The league included stretch provisions where teams could stretch out the payment of a contract over several years this would allow teams some salary cap relief.) 
+
+Removed players who did not even attempt a single 2-point field goal.  Also removed players who were not able to play more than 5 minutes per game.  This reduced the number of observations to 7978. The reason why I removed the data was because I wanted to include players who played meaningful minutes on average and players who at least attempted a 2 point shot.  
+
+```{r eval = FALSE}
+lessthanfive<-which(df$Games <5)
+df <- df[-lessthanfive,]
+lessthanfiveminGame <- which(df$MinGames < 5)
+df <- df[-lessthanfiveminGame,]
+lessthanoneppg<-which(df$ppg < 1)
+df <- df[-lessthanoneppg,]
+#decided not to use the incomplete 2019 dataset
+twennineteen<-which(df$PlayerYear == 2019)
+df <- df[-twennineteen,]
+rownames(df) <- NULL 
+```
+
+In the time period from 2000 to 2018, the Vancouver Grizzlies became the Memphis Grizzlies, the Seattle Supersonics became the Oklahoma City Thunder, the New Jersey Nets became the Brooklyn Nets, the Charlotte Hornets became the New Orleans Pelicans, Charlotte under the leadership of Michael Jordan got their team back and got their team back but were named the Bobcats before switching the name back to the Hornets. 
+
+	I chose to change the old team names to the newer one.  I used grepl and gsub to perform this task. For example from 2000 to 2007 the Seattle Supersonics team would be changed to the Oklahoma City Thunder. While, this is inaccurate it won’t affect the players data and stats but it will keep track of team win history through 2000 to 2018.  
+	
+```{r eval = FALSE}
+#checking team names 
+unique(df$team)
+grepl("PHX", df$team)
+grepl("PHO", df$team)
+which(df$team == "PHO")
+df$team <- gsub("PHX", "PHO", df$team)
+
+#vancouver grizzlies were 2000 and 2001, 
+df$team <- gsub("VAN", "MEM", df$team)
+#Sonics was from 2008 to 2018, 
+df$team <-gsub("SEA", "OKC", df$team)
+#Nets moved to brooklyn in 2011
+df$team <-gsub("NJN", "BRK", df$team)
+df$team <-gsub("BKN", "BRK", df$team)
+#Charlotte hornets 2000- 2002 then became the bobcats and got name back to be hornets again in 2014
+which(df$team == "CHH") #charlote hornets
+df[6817,]
+df$team <-gsub("CHA", "CHO", df$team)
+df$team <-gsub("CHH", "CHO", df$team)
+#New Orlean Pelicans 
+which(df$team == "NOK")
+df[4790,] # is the hornets for new orleans 
+
+df$team <-gsub("NOH", "NOP", df$team)
+df$team <-gsub("NOK", "NOP", df$team)
+unique(df$team)
+```
+
+**Data Sources each with their own unique spelling for names and team symbols.**  
+
+Some of the sources used different symbols for different teams.  For example, the Charlotte Hornets would be shortened to CHA on one site, CHH on another source and CHO on another.  The Phoenix Suns also had a similar problem where the teams symbol would be PHO and PHX.
+
+I chose CHO for Charlotte and PHO for Phoenix.  I used which, gsub, grepl and unique. 
+
+The Charlotte Hornets data set refused to load in.  Ended up using data.table package to input the data for the number of wins. 
+ 
+```{r eval = FALSE}                     
+setDT(data)
+data[i = PlayerYear == 2018 & team == "CHO", 
+     j = TeamWins := 36]
+data[i = PlayerYear == 2017 & team == "CHO", 
+     j = TeamWins := 36]
+```
+
+Changed height from feet and inches to centimeters so I will be able to do a correlation analysis for height and salary.    
+
+```{r eval = FALSE}
+#want to change height to cm to calculate average joe data
+df$height_ft<-gsub("7'6\"", 229, df$height_ft)
+df$height_ft<-gsub("7'5\"", 226, df$height_ft)
+df$height_ft<-gsub("7'4\"", 224, df$height_ft)
+df$height_ft<-gsub("7'3\"", 221, df$height_ft)
+df$height_ft<-gsub("7'2\"", 219, df$height_ft)
+df$height_ft<-gsub("7'1\"", 216, df$height_ft)
+df$height_ft<-gsub("7'0\"", 214, df$height_ft)
+df$height_ft<-gsub("6'11\"", 211, df$height_ft)
+df$height_ft<-gsub("6'10\"", 208, df$height_ft)
+df$height_ft<-gsub("6'9\"", 206, df$height_ft)
+df$height_ft<-gsub("6'8\"", 203, df$height_ft)
+df$height_ft<-gsub("6'7\"", 201, df$height_ft)
+df$height_ft<-gsub("6'6\"", 198, df$height_ft)
+df$height_ft<-gsub("6'6", 198, df$height_ft)
+df$height_ft<-gsub("6'5\"", 196, df$height_ft)
+df$height_ft<-gsub("6'4\"", 193, df$height_ft)
+df$height_ft<-gsub("6'3\"", 191, df$height_ft)
+df$height_ft<-gsub("6'2\"", 188, df$height_ft)
+df$height_ft<-gsub("6'1\"", 186, df$height_ft)
+df$height_ft<-gsub("6'0\"", 183, df$height_ft)
+df$height_ft<-gsub("5'11\"", 180, df$height_ft)
+df$height_ft<-gsub("5'10\"", 178, df$height_ft)
+df$height_ft<-gsub("5'9\"", 175, df$height_ft)
+df$height_ft<-gsub("5'8\"", 173, df$height_ft)
+df$height_ft<-gsub("5'7\"", 170, df$height_ft)
+df$height_ft<-gsub("5'6\"", 168, df$height_ft)
+df$height_ft<-gsub("5'5\"", 165, df$height_ft)
+df$height_ft<-gsub("5'4\"", 163, df$height_ft)
+df$height_ft<-gsub("5'3\"", 160, df$height_ft)
+df <-df[,-c(1:2)]
+colnames(df)[4] <- "height_cm"
+str(df)
+df$height_cm <- as.numeric(df$height_cm)
+height_na<-which(is.na(df$height_cm))
+```
+
+**Additional Variables added from the initial Data Wrangling Process**
+
+Number of years in the NBA 
+Reason this was added in, is because the number of years played under the collective bargaining agreement awards players higher available salary for the more years they played in the league.  The minimum for a player who played 1 year will be vastly different than a player who’s played 10 years and is getting the minimum from the team. (Under the current NBA CBA a 1 year minimum salary player could only receive 1,349,383 dollars and this contract could only be extended for 2 years while a 10 year player would receive 2,393,887 dollars the first year and this contract could be extended for up to 5 years.  
+
+**Team Salary, Salary Cap,  Over/Under**
+
+These 3 variables were added to compare the change of team salary and salary cap over the years and how much the team was over and under the cap.  
+
+```{r eval = FALSE}
+#load in team salary want to see how much each player salary takes from total team salary 
+#see if they are worth it. #2004 changed to 30 teams 
+tmSal_18<-read.csv("hoops_hype_salaryt_2018.csv",header = F)
+tmSal_18 <- tmSal_18[-c(1:2),-c(1:2,5)]
+tmSal_18["PlayerYear"] <- 2018 
+colnames(tmSal_18)[1:2]<- c("team","tmsalary")
+rownames(tmSal_18) <- NULL 
+
+tmSal <- rbind(tmSal_00,tmSal_01, tmSal_02, tmSal_03, tmSal_04, tmSal_05,
+               tmSal_06, tmSal_07, tmSal_08, tmSal_09, tmSal_10,
+               tmSal_11, tmSal_12, tmSal_13, tmSal_14, tmSal_15,
+               tmSal_16, tmSal_17, tmSal_18)
+
+tmSal$team<-gsub("LA Clippers", "LAC", tmSal$team)
+tmSal$team<-gsub("Vancouver Grizzlies", "MEM", tmSal$team)
+tmSal$team<-gsub("Memphis", "MEM", tmSal$team)
+tmSal$team<-gsub("Seattle Sonics", "OKC", tmSal$team)
+tmSal$team<-gsub("Oklahoma City", "OKC", tmSal$team)
+tmSal$team<-gsub("Charlotte Hornets", "CHO", tmSal$team)
+tmSal$team<-gsub("Charlotte", "CHO", tmSal$team)
+tmSal$team<-gsub("New Orleans", "NOP", tmSal$team)
+```
+
+
+I ended up removing state taxes from the data.  The reason why is because this information would require advice from a tax specialist.  Each state has their own different structure for tax brackets depending on the players income.  Jock tax also applies to the NBA.  Jock tax is where a player would be taxed in the city they played in.  For example, there are 82 games in one season.  41 of those games would be taxed in the city the player signed with while the other 41 games would be taxed according to where the player played for away games.  In order to try to maintain accuracy I did not want to use a generic state tax and apply it to salary for each player.  Therefore, this data was not included because more research is needed to fully understand the Canadian and USA state tax systems.  
+
+
+
+###**Data Exploration, Story, Statistics and Machine Learning**
+
+**1.	The Distribution of our Data**
+
+Salary Spread
+
+```{r echo = FALSE}
+#salary
+ggplot(data, aes(x = salary)) + 
+  geom_density(col = 'black', fill = 'green') +
+  ggtitle("Salary distribution")
+```
+
+Salary distribution is right skewed, the structure of NBA contracts under the new CBA allows players to take up to 35 percent of the salary cap.  Therefore, there will be a few players getting huge paydays while on average role players will be getting a much smaller salary in comparison.  
+
+Threes Made Spread
+
+```{r echo = FALSE}
+#Twos distribution
+ggplot(data, aes(x = two)) + 
+  geom_density(col = 'black', fill = 'red') +
+  ggtitle("Two point distribution")
+
+#three distribution
+ggplot(data, aes(x = three)) + 
+  geom_density(col = 'black', fill = 'red') +
+  ggtitle("Spread of Threes")
+```
+
+
+Eventhough basketball is considered a team sport.  You can see from the two point and three pointer made distrbution it is right skewed as well.  This is an entertainment industry where you want your best players taking the most shots and creating the most interesting news and media headlines which in terms will indirectly drive more revenue for your team.  
+
+Total Rebound Spread 
+
+```{r echo = FALSE}
+#total rebounds
+ggplot(data, aes(x = t_reb)) + 
+  geom_density(col = 'black', fill = 'blue') +
+  ggtitle("Total rebound distribution")
+```
+
+Total rebounds is right skewed as well.  The reasoning behind this is because of todays play style.  Where one player will rebound the ball and a few of the other players will begin to race down the court to score on the fast break.  Also, due to the increased spacing on the floor now only a few players will be designated inside the painted area to defend.  
+
+Turnovers Spread
+
+```{r echo = FALSE}
+#Turnover distribution
+ggplot(data, aes(x = TO)) + 
+  geom_density(col = 'black', fill = 'red') +
+  ggtitle("Turnover Distribution")
+```
+
+Turnovers are right skewed as well.  The best players hold the ball more during a game and thus the chance of turning the ball over will go up as these players will be doubled and even tripled teamed. 
+
+PlusMinus Spread
+
+```{r echo = FALSE}
+#PlusMinus distribution
+ggplot(data, aes(x = PlusMinus)) + 
+  geom_density(col = 'black', fill = 'red') +
+  ggtitle("PlusMinus Distribution")
+```
+
+Plus Minus is normally distributed.  Since, a game of basketball is about scoring more points than your opponent and limiting their number of points.  There will always be a player who has a negative plus minus after if they allow more points on the floor than they scored and vice versa.  
+
+Age Spread
+
+```{r echo = FALSE}
+#PlusMinus distribution
+ggplot(data, aes(x = Age)) + 
+  geom_density(col = 'black', fill = 'red') +
+  ggtitle("Age Distribution")
+```
+
+Age spread is a little bit right skewed.  What will be interesting to see is, with modern day sports medicine and therapy whether the data will become more and more right skewed in the next 5 years as players will be able to play well into their late 30's.  
+
+**2.	NBA Media Trends:**
+
+The importance of the Three 
+
+Through the media and with records being broken for 3 point attempts and makes in the latest NBA season.  The 3 point shot and how it is implemented in todays game has changed the way the game has played.  From a big man dominant game to a slashing guard game to now a team that emphasizes ball movement and offensive floor spacing.  
+
+```{r echo = FALSE}
+shot_att <-data %>% group_by(PlayerYear) %>% summarize(two_att = mean(two_att), three_att = mean(three_att), two = mean(two), three =mean(three))
+ggplot(shot_att, aes(x =PlayerYear)) +
+  geom_point(aes(y= two_att), colour = "red") +
+  geom_point(aes(y= three_att), colour = "blue") +
+  scale_x_continuous(breaks=c(2000,2002,2004,2006,2008,2010,2012,2014,2016,2018), 
+                     limits =c(2000,2018)) + 
+  ylab("Shot Attempts") +
+  ggtitle("The Threes vs Twos Attempts")
+```
+
+  By plotting a graph we can see that the average number or 2 point attempts has been gradually decreasing while the number of 3 point attempts has been increasing.  
+
+However, what we really want to know are teams now paying for players who are making three point shots. 
+
+```{r echo = FALSE}
+thr_sal<-data %>%  group_by(PlayerYear) %>% filter(three >= 3) %>% summarize(mean(salary), 
+                                                                             median(salary),
+                                                                             max(salary), 
+                                                                             min(salary))
+ggplot(thr_sal, aes(PlayerYear, `mean(salary)`)) + 
+  geom_line() +
+  ggtitle("Shooting more than Three 3's salary")
+thr_sal 
+lessthr_sal<-data %>%  group_by(PlayerYear) %>% filter(three < 3) %>% summarize(mean(salary), 
+                                                                                median(salary),
+                                                                                max(salary), 
+                                                                                min(salary))
+
+ggplot(lessthr_sal, aes(PlayerYear, `mean(salary)`)) + 
+  geom_line() +
+  ggtitle("Less than three 3's salary")
+lessthr_sal
+```
+
+
+If we filter and look at player salary comparison for players who made more than three 3 pointers, the average salary seems to have been decreasing gradually from the 2008 period to around the 2013 period before slowly rising up again.  There was a noticeable sharp increase after the 2015 season.  
+
+If we further analyze the data and look at the All NBA teams for those seasons, we can see that from the first, second and third All-NBA teams there were really no 3 point specialists at the time.  Most on the list were dominant big men or slashing guards like Kobe Bryant, Tracy McGrady and Dwyane Wade.  Ray Allen, considered the best 3 point shooter after in history debatable with Reggie Miller at the time only made an All-NBA team during the 2004-2005 season.  Out of those years he was the only player on the ALL-NBA team to make more than three 3's a game during the season.  
+
+```{r echo = FALSE}
+data %>% filter(PlayerYear == 2005| PlayerYear == 2006| PlayerYear == 2007| PlayerYear == 2008 | 
+PlayerYear == 2009| PlayerYear == 2010| PlayerYear == 2011| PlayerYear == 2012 | PlayerYear == 2013|
+PlayerYear == 2014) %>% arrange(desc(PlayerYear)) %>% subset(nba1 == "YES"| nba2 == "YES"| nba3 =="YES", select = c(name, PlayerYear, three_att, three)) 
+```
+
+Other 3 point big shot takers were Dirk Nowitzki and Chauncey Billups.  However, the number of 3's made was not over 3 compared to todays NBA.  With less emphasis in ball movement and spacing many of these 3's were perhaps contested in the past.  
+
+
+Then there is the spike in salary after the 2015 season.  While this might have some contribution to the Warriors winning their first championship and becoming the first jump shooting team to do so, there were many other factors that increased salary after the 2015 NBA season.   We can confirm that this was a spike across all variables related to salary if we take a look at number of 2 pointers made by a player compared to their salary. As well as salaries for players who made less than three 3’s.  
+
+```{r echo = FALSE}
+two_w<-data %>% group_by(PlayerYear) %>% filter(two >=3) %>% summarize(mean(salary), median(salary),
+                                                                       max(salary), min(salary))
+ggplot(two_w, aes(PlayerYear, `mean(salary)`)) + 
+  geom_line() +
+  ggtitle("Making more than Two 2's") +
+  ylab("salary")
+``` 
+
+During the 2016-2017 free agency there were more buyers in terms of teams bidding for the services of free agents than there were sellers, players who were trying to sell their services to a new team.  Notable free agents at the time were Lebron James, Anthony Davis and Kevin Durant.  Overall, teams spent a record of 2 billion dollars on cap.  
+
+[2 Billion dollars](https://aplus.com/a/nba-contracts-explained?no_monetization=true)
+
+
+NBA player salary is tied to BRI, basketball related income, where the players association have bargained that players share 50 percent of all basketball related income.  
+
+[BRI](https://www.investopedia.com/articles/investing/070715/nbas-business-model.asp)
+
+There was an increase in salary cap overall because of the massive 24 billion dollar TV deal the NBA signed.  
+
+[TV Deal](http://www.nba.com/article/2017/04/05/nba-tv-ratings-promising-first-year-new-deal)
+
+Other factors that might be included are the rise of social media in those years as well as more globalization of the game outside North America.  
+
+```{r echo = FALSE}
+#Player Year Team Salary
+
+ggplot(data, aes(PlayerYear, tmsalary)) +
+  geom_point() +
+  ggtitle("Player Year vs Team Salary")
+```
+
+Correlation Player and Team Salary
+
+```{r echo = FALSE}
+cor(data$PlayerYear, data$tmsalary)
+```
+
+```{r echo = FALSE}
+#TeamSal and Salcap 
+
+ggplot(data,aes(SalCap, tmsalary)) + 
+  geom_point() +
+  ggtitle("Team salary vs Salary Cap")
+
+```
+
+Correlation Team Salary and Salary Cap
+
+```{r echo = FALSE}
+cor(data$tmsalary, data$SalCap)
+#player year and sal cap
+```
+
+```{r echo = FALSE}
+data %>% ggplot(aes(PlayerYear, SalCap)) + 
+  geom_point() +
+  ggtitle("Player Year vs Salary Cap")
+```
+
+Correlation Player Salary and Salary Cap 
+
+```{r echo = FALSE}
+cor(data$PlayerYear, data$SalCap)
+```
+
+Therefore, as a team should we really be looking at the 3 point shot and what teams are paying 3 point shooters who make more 3s?  If we do a comparison now of team wins to 3 point shot we can see a trend forming. We can see a 0.89 correlation between player salary and salary cap.  
+
+```{r echo = FALSE}
+thr_win<-data %>%  group_by(PlayerYear) %>% filter(three >= 3) %>% summarize(meanW = mean(TeamWins,na.rm = T), 
+                                                                             median(TeamWins,na.rm =T),
+                                                                             max(TeamWins,na.rm = T), 
+                                                                             min(TeamWins, na.rm = T))
+thr_win
+ggplot(thr_win, aes(PlayerYear, meanW)) + 
+  geom_line() +
+  ggtitle("Shooting more than three 3's win trend")
+
+thr_lose<-data %>%  group_by(PlayerYear) %>% filter(three < 3) %>% summarize(meanW = mean(TeamWins,na.rm = T), 
+                                                                             median(TeamWins,na.rm =T),
+                                                                             max(TeamWins,na.rm = T), 
+                                                                             min(TeamWins, na.rm = T))
+thr_lose
+ggplot(thr_lose, aes(PlayerYear, meanW)) + 
+  geom_line() +
+  ggtitle("Taking Less than Three 3's a game")
+```
+
+As we can see entering past the 2015 NBA season there is a trend.  Teams that had players who made more than three 3’s on their team won on average 50 or more games.  While teams who had players who made less than three 3’s won an average of 40 games.  The dip to 32 games is during the NBA shortened lock out season after the 2011 CBA where only 66 games were played. 
+ 
+So as a team knowing this trend we should look for these types of players to add onto our team.  
+
+
+Teams are going small ball there are no more 7ft players in the league anymore. 
+
+
+What we want to know is if the NBA is getting smaller.  Are players like Lebron James(6ft9”), Draymond Green(6ft7”), PJ Tucker(6ft7”) going to replace todays big men?  Should we not even bother to look at players over 7ft anymore? 
+
+```{r include = FALSE , fig.width=14, fig.height=12}
+#2018 average joe find the average joe for each year then rbind them 
+AvgJoe_18<-data %>% filter(PlayerYear == 2018) %>% summarize(name = "AvgJoe_2018",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per = mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_17<-data %>% filter(PlayerYear == 2017) %>% summarize(name = "AvgJoe_2017",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_16<-data %>% filter(PlayerYear == 2016) %>% summarize(name = "AvgJoe_2016",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_15<-data %>% filter(PlayerYear == 2015) %>% summarize(name = "AvgJoe_2015",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_14<-data %>% filter(PlayerYear == 2014) %>% summarize(name = "AvgJoe_2014",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two/two_att),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_13<-data %>% filter(PlayerYear == 2013) %>% summarize(name = "AvgJoe_2013",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_12<-data %>% filter(PlayerYear == 2012) %>% summarize(name = "AvgJoe_2012",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_11<-data %>% filter(PlayerYear == 2011) %>% summarize(name = "AvgJoe_2011",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_10<-data %>% filter(PlayerYear == 2010) %>% summarize(name = "AvgJoe_2010",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_09<-data %>% filter(PlayerYear == 2009) %>% summarize(name = "AvgJoe_2009",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_08<-data %>% filter(PlayerYear == 2008) %>% summarize(name = "AvgJoe_2008",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_07<-data %>% filter(PlayerYear == 2007) %>% summarize(name = "AvgJoe_2007",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_06<-data %>% filter(PlayerYear == 2006) %>% summarize(name = "AvgJoe_2006",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_05<-data %>% filter(PlayerYear == 2005) %>% summarize(name = "AvgJoe_2005",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_04<-data %>% filter(PlayerYear == 2004) %>% summarize(name = "AvgJoe_2004",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_03<-data %>% filter(PlayerYear == 2003) %>% summarize(name = "AvgJoe_2003",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_02<-data %>% filter(PlayerYear == 2002) %>% summarize(name = "AvgJoe_2002",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_01<-data %>% filter(PlayerYear == 2001) %>% summarize(name = "AvgJoe_2001",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe_00<-data %>% filter(PlayerYear == 2000) %>% summarize(name = "AvgJoe_2000",height = mean(height_cm), weight =mean(weight_lb),
+                                                             salary = mean(salary/((100+infl)/100)), plusMinus =mean(PlusMinus), age =mean(Age),
+                                                             games = mean(Games), start = mean(started), mins =mean(MinGames),
+                                                             fg=mean(FG), fg_att =mean(FG_att), fg_per =mean(FG_per),
+                                                             three =mean(three), three_att = mean(three_att), three_per =mean(three/three_att),
+                                                             two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                                             efg=mean(EFG), ft=mean(FT), ft_att =mean(FT_att), ft_per = mean(ft/ft_att),
+                                                             o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                                             steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                                             ppg =mean(ppg))
+AvgJoe<-rbind(AvgJoe_00,AvgJoe_01,AvgJoe_02,AvgJoe_03,AvgJoe_04,AvgJoe_05,AvgJoe_06,
+              AvgJoe_07,AvgJoe_08,AvgJoe_09,AvgJoe_10,AvgJoe_11,AvgJoe_12,AvgJoe_13,
+              AvgJoe_14,AvgJoe_15,AvgJoe_16,AvgJoe_17,AvgJoe_18)
+
+AvgJoe["PlayerYear"]<- c(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,
+                         2014,2015,2016,2017,2018)
+AvgJoe <-AvgJoe[,-1]
+AvgJoe
+
+p1<-ggplot(AvgJoe, aes(PlayerYear, salary, color = ppg)) + geom_line()  +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Avg Joe relationship salary and ppg")
+#number of points seems to dip after a bit maybe inefficient scoring 
+p2<-ggplot(AvgJoe, aes(PlayerYear, salary, color = efg)) + geom_line()  +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Avg Joe relationship salary and EFG")
+
+grid.arrange(p1, p2, ncol = 2)
+#EFG wasn't really valuable in the early years but it slowly started gaining steam after 2015 
+
+
+#the mean of the 19 seasons 
+
+avgJoe19yrs<- AvgJoe %>%  summarize(name = "AvgJoe",height = mean(height), weight =mean(weight),
+                                    salary = mean(salary), plusMinus =mean(plusMinus), age =mean(age),
+                                    games = mean(games), start = mean(start), mins =mean(mins),
+                                    fg=mean(fg), fg_att =mean(fg_att), fg_per =mean(fg_per),
+                                    three =mean(three), three_att = mean(three_att), three_per =mean(three_per),
+                                    two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                    efg=mean(efg), ft=mean(ft), ft_att =mean(ft_att), ft_per = mean(ft_per),
+                                    o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                    steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                    ppg =mean(ppg))
+avgJoe19yrs
+AvgJoe["Type"] <- "Avg"
+```
+
+```{r echo = FALSE}
+AvgJoe %>% select(PlayerYear, height, salary)
+```
+
+Height stayed relatively the same.  However, maybe the shorter players became much taller which pulled up this average.  Let us look at the number of 7 footers in the NBA throughout the 19 seasons.
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+tall<-data %>% subset(height_cm >= 213, select = c(PlayerYear, name))
+tall_tally <- tall %>% group_by(PlayerYear) %>% summarise(count_name = n())
+tall_tally
+
+ggplot(tall_tally, aes(PlayerYear, count_name)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(tall_tally$PlayerYear))) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ylab("Number of 7ft players") + 
+  ggtitle("7fters over 19 years")
+```
+
+Number of 7fters has stayed relatively the same over the period and has even seemed to increase. There were 47 plaeyrs that were 7 ft and taller in 2017. Therefore, overall the league still has players listed at 7ft.  This is perhaps because media coverage do not cover these teams as much and thus creating the misconception of a smaller NBA.  
+
+
+Does PlusMinus really matter
+
+Before advanced NBA analytics teams looked mainly at the points scored by a player as a reference point to start with salary.  The rule of thumb was the more points scored the more exciting the player was to watch, the more fans thus the more revenue and hopefully this would equate to more wins as well.  However, as the NBA started adopting player analytics some of these high scorers were found to be taking inefficient shots.  Many players fell out of favor in the league such as Josh Smith and Michael Carter-Williams. 
+
+One advanced statistic that we should look more closely to is plus minus.  The determination of how many points a player makes the other 4 players on the floor better.  
+
+PlusMinus and Salary Correlation
+
+```{r echo = FALSE}
+cor(data$PlusMinus, data$salary)
+```
+
+```{r echo = FALSE}
+data %>% ggplot(aes(PlusMinus,salary)) + 
+  geom_point() +
+  ggtitle("PlusMinus compared to Salary")
+
+data %>% ggplot(aes(PlusMinus,TeamWins)) + 
+  geom_point() +
+  ggtitle("PlusMinus compared to Team Wins")
+```
+
+We can see kind of a cluster in the middle between - 15 and 15 PlusMinus.  Players getting the most salary have a plus minus between -5 and 5.  
+
+If we look at the team wins compared to plus minus we can see there is one player that has a plus minus of -40 but still won 60 plus games.  
+
+Alex Acker Outlier 
+
+```{r echo = FALSE}
+data %>% filter(TeamWins >= 60 & PlusMinus <= -40) %>% select(name, team, salary, PlayerYear)
+```
+
+Now for the outlier where the player won less than 40 games but has a huge plus minus of over 20.
+
+```{r echo = FALSE}
+data %>% filter(TeamWins <= 30 & PlusMinus >= 20) %>% select(name, team, salary, PlayerYear)
+```
+
+Who is Hamed Haddadi? And should we build a championship team around this player with such a good plus minus and get him away from his bad team?  
+
+The problem with plus minus.  
+
+Plus minus can be contributed to the competition the player is playing against.  For example, a role player who plays with the second unit would be competing against other second unit teams and might have a plus minus better than the player who is starting ahead of them.  Another problem with plus minus is the rotation teams use.  The player might be stuck with an offensively challenge or defensively challenged player in the teams rotation who could be dragging their plus minus down.  
+
+```{r echo = FALSE}
+data %>% filter(PlusMinus > 10) %>% select(name, salary, PlusMinus, PlayerYear) %>% 
+arrange(desc(PlusMinus)) %>% head(n = 20)
+```
+
+Many of these top 20 PlusMinus players an average fan probably has never even heard about.  This is the problem with PlusMinus, a role player or an unknown can play meaningless minutes and still have a great plus minus. 
+
+```{r echo = FALSE}
+data %>% filter(PlusMinus > 10 & MinGames >= 15) %>% select(name, salary, PlusMinus, PlayerYear) %>% 
+arrange(desc(PlusMinus)) %>% head(n = 20)
+```
+
+The use of plus minus becomes better when we add in a minimum of 15 minutes requirement played.  However, is Troy Daniels ultimately better than Lebron James just because his plus minus is higher and his salary is just a fraction of Lebron James? 
+
+Therefore, while plus minus has its uses in determine whether we want a player on our team we should use it only as an initial starting point in salary talks with free agents. In a sport where it’s about using the correct match ups to exploit the other team, it is important to wary of this statistic as well as other advanced analytic statistics that are being developed when trying to make decisions on player data.  
+
+
+3.	How we should scout according to the data:
+
+Top College Programs Being Paid by the NBA
+
+By looking at the top overall salary paid schools we can look at which colleges we should be considering when drafting for our team.  
+
+```{r echo = FALSE}
+
+school_tally <- data %>% group_by(school) %>% 
+  summarise(count_school = n(), salary =sum(as.numeric(salary)))
+school_tally %>% arrange(desc(count_school)) %>% head(n =11)
+top_pay_school <- school_tally %>% arrange(desc(salary)) %>% head(n =11)
+top_pay_school <- top_pay_school[-1,]
+ggplot(top_pay_school, aes(school,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(top_pay_school$school))) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Top Paying Schools") +
+  scale_y_continuous(breaks=c(0,250000000,500000000,750000000,1000000000,1250000000))
+```
+
+When looking at the top schools being paid overall for the last 19 seasons, we see familiar names that are usually the top basketball programs in the United States. (Kentucky, Duke, North Carolina, UCLA, Kansas)
+
+The none category includes players that did not attend college in the United States and players who were drafted outside the United States.  
+
+Look at these top 3 schools let us see which position was drafted the most.  
+
+```{r echo = FALSE}
+#Lets see the top 3 Colleges what positions they provide the most
+top3colleges<-data %>% 
+  filter(school == "Kentucky"|school == "Duke"|school =="North Carolina") %>% 
+  group_by(Pos,height_cm,salary,name,school)
+#which position got drafted the most 
+top3PosTally <- top3colleges %>% 
+  group_by(Pos) %>% 
+  summarize(count_pos = n())
+mostPos<- top3PosTally %>% arrange(desc(count_pos)) %>% head(n =5)
+mostPos
+```
+
+Interestingly, the power forward position was drafted the most.  There is a big discrepancy from power forward and point guard in these top schools.  Which makes sense, most of the time these college teams will scout taller players in high school.  There is a saying in basketball: “Height can’t be taught.”  It is the belief that if a NBA team or a college school can draft a player who is tall but can somewhat play the game they could be transformed into a superstar. All teams are scouting for this type of player.  The New Orleans Pelicans, Minnesota Timberwolves and Milwaukee Bucks were all teams that were extremely lucky by drafting Anthony Davis, Karl Anthony-Towns and Giannis Antetokounmpo.  
+
+Lets look at which teams have drafted the most from these schools over the 19 years.  
+
+```{r echo =FALSE}
+#which team drafted the most from these colleges 
+top3TeamTally <- top3colleges %>% 
+  group_by(team) %>% 
+  summarize(count_team = n())
+mostpicks<-top3TeamTally %>% arrange(desc(count_team)) %>% head(n=10)
+mostpicks
+```
+
+While, Charlotte, Clippers and Detroit have been doing relatively well recently in the NBA in terms of win/loss.  In the past these teams have been horrible.  Charlotte in 2012 during the shortened NBA lock out season won only 7 games out of 66 possible games.  While, the Clippers under Donald Sterling’s management was stuck in a never ending cycle of tanking games to get lottery picks before the addition of Chris Paul and Blake Griffin.  
+
+
+
+Top International players 
+
+There has been many international gems over the years. Most notable names are Dirk Nowitziki, Steve Nash, Peja Stojakovic and most recently in the 2019 season the rookie of the year candidate Luka Doncic.  The game is becoming more global with countries now investing more resources to develop basketball leagues and programs for their younger generation.  With this trend we want to look at the data and see where NBA teams should be sending their scouts abroad to be able to find the next potential international NBA star. 
+
+```{r echo = FALSE}
+IntandHigh <- data %>% subset(school == "None", select = c(name,salary,country,DraftYear,DraftNum)) %>% 
+  arrange(desc(salary))
+International <- IntandHigh %>% subset(country != "USA", c(name,salary,country,DraftYear,DraftNum)) %>% 
+  arrange(desc(salary))
+
+int_tally <- International %>% group_by(country) %>% 
+  summarise(count_country = n(), salary =sum(as.numeric(salary)))
+
+top_10_int<-int_tally %>% arrange(desc(salary)) %>% head(n =10)
+top_10_int
+ggplot(top_10_int, aes(country,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(top_10_int$country))) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Top 10 International Players and their Salaries")
+```
+
+We can see that France and Spain have received the most salary over the past 19 seasons.  If we look at the Euro League championships, Spain and France are usually the top contenders every season.  With Spain now developing a great Basketball League called the Liga ACB.  With Luka Doncic playing in Real Madrid before joining the NBA. 
+
+The benefit of these European leagues is they allow players at the tender age of 15 to play professional basketball.  This arguably can develop a player better for a professional career in basketball before he enters the NBA for the following reason:
+
+	The player is already playing with grown men
+	Develops the concept of team basketball
+	Is not enticed by shoe signings and American business model commercialization and brand building
+	More adjusted to a professional athletes life with the travel and the fans 
+	
+While it is not in this scope as the NBA league becomes more globalized, it would be interesting in the future to do analysis and follow young players who transitioned from their teens in the European league to the NBA. (Ricky Rubio and Luka Doncic.) 
+
+ 
+The number 1 overall pick vs a second round Gem. 
+
+How important has been smart drafting in the second-round vs tanking to get the number one pick. 
+
+```{r echo = FALSE}
+numberOne<-data %>% subset(DraftNum == 1, 
+                           select = c(name, salary, EFG, ppg, country, school, team, PlayerYear,
+                                      nba1,nba2,nba3,def1,def2))
+starNumOne<-numberOne %>% subset(nba1 == "YES" | nba2 == "YES" | nba3 == "YES" | def1 == "YES" | def2 == "YES",
+                                 select = c(name, salary, EFG, ppg, country, school, team, PlayerYear))
+starNumOne_tally <- starNumOne %>% group_by(name) %>% 
+  summarise(count_nba = n(), salary =sum(as.numeric(salary)))
+ggplot(starNumOne_tally, aes(name,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(starNumOne_tally$name))) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+notLottery <- data %>% subset(DraftRound != 1, 
+                              select = c(name, salary, EFG, ppg, country, school, team, PlayerYear,
+                                         nba1,nba2,nba3,def1,def2 ))
+starNotLot<-notLottery %>% subset(nba1 == "YES" | nba2 == "YES" | nba3 == "YES" | def1 == "YES" | def2 == "YES",
+                                  select = c(name, salary, EFG, ppg, country, school, team, PlayerYear))
+rownames(starNotLot) <- NULL
+starNotLot_tally <- starNotLot %>% group_by(name) %>% 
+  summarise(count_nba = n(), salary =sum(as.numeric(salary)))
+ggplot(starNotLot_tally, aes(name,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(starNotLot_tally$name))) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Not in the lottery and Salary")
+```
+
+Notable names that show up in this category are Lebron James, Shaquille O’Neal, Tim Duncan and Allen Iverson.  Looking at the salary spread vs the 2nd round gems, the 1st rounders got paid more with the highest salary accumulated being 200 million vs the 2nd round drafts of just getting paid 60 million salary accumulated.  Notable names are Ben Wallace, Draymond Green and Marc Gasol.  What is interesting from this chart is most of these players from the second round actually were known for their defense.  Second rounders yielded 4 more defensive players than the first overall pick.  
+
+4.	A look at what the Best teams in the NBA are spending and what the worst teams are spending. How can we learn from the best and avoid making mistakes like the worst. 
+
+```{r echo = FALSE}
+#2018
+#most wins
+win_18 <- data %>% subset(PlayerYear == 2018 & team == "HOU",
+                          select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+
+
+#least wins 
+lose_18<-data %>% subset(PlayerYear == 2018 & team == "PHO",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+
+#2017
+#most wins
+win_17<-data %>% subset(PlayerYear == 2017 & team == "GSW",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+
+#least wins 
+lose_17<-data %>% subset(PlayerYear == 2017 & team == "BRK",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins))
+
+#2016
+#most wins
+win_16<-data %>% subset(PlayerYear == 2016 & team == "GSW",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_16<-data %>% subset(PlayerYear == 2016 & team == "PHI",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2015
+#most wins
+win_15<-data %>% subset(PlayerYear == 2015 & team == "GSW",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_15<-data %>% subset(PlayerYear == 2015 & team == "MIN",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2014
+#most wins
+win_14<-data %>% subset(PlayerYear == 2014 & team == "SAS",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_14<-data %>% subset(PlayerYear == 2014 & team == "MIL",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2013
+#most wins
+win_13<-data %>% subset(PlayerYear == 2013 & team == "MIA",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which.max(salary)],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_13<-data %>% subset(PlayerYear == 2013 & team == "ORL",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2012
+#most wins
+win_12S<-data %>% subset(PlayerYear == 2012 & team == "SAS",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+win_12C<-data %>% subset(PlayerYear == 2012 & team == "CHI",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins
+lose_12<-data %>% subset(PlayerYear == 2012 & team == "CHO",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+
+#2011
+#most wins
+win_11 <-data %>% subset(PlayerYear == 2011 & team == "CHI",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_11<-data %>% subset(PlayerYear == 2011 & team == "MIN",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2010
+#most wins
+win_10<-data %>% subset(PlayerYear == 2010 & team == "CLE",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_10<-data %>% subset(PlayerYear == 2010 & team == "BRK",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2009
+#most wins
+win_9<-data %>% subset(PlayerYear == 2009 & team == "CLE",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_9<-data %>% subset(PlayerYear == 2009 & team == "SAC",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2008
+#most wins
+win_8<-data %>% subset(PlayerYear == 2008 & team == "BOS",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_8<-data %>% subset(PlayerYear == 2008 & team == "MIA",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2007
+#most wins
+win_7<-data %>% subset(PlayerYear == 2007 & team == "DAL",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_7<-data %>% subset(PlayerYear == 2007 & team == "MEM",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2006
+#most wins
+win_6<-data %>% subset(PlayerYear == 2006 & team == "DET",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_6<-data %>% subset(PlayerYear == 2006 & team == "POR",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2005
+#most wins
+win_5<-data %>% subset(PlayerYear == 2005 & team == "PHO",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_5<-data %>% subset(PlayerYear == 2005 & team == "ATL",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2004
+#most wins
+win_4<-data %>% subset(PlayerYear == 2004 & team == "IND",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_4<-data %>% subset(PlayerYear == 2004 & team == "ORL",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2003
+#most wins
+win_3<-data %>% subset(PlayerYear == 2003 & team == "SAS",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_3C<-data %>% subset(PlayerYear == 2003 & team == "CLE",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+lose_3D<-data %>% subset(PlayerYear == 2003 & team == "DEN",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2002
+#most wins
+win_2<-data %>% subset(PlayerYear == 2002 & team == "SAC",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_2G<-data %>% subset(PlayerYear == 2002 & team == "GSW",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+lose_2C<-data %>% subset(PlayerYear == 2002 & team == "CHI",
+                         select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2001
+#most wins
+win_1<-data %>% subset(PlayerYear == 2001 & team == "SAS",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+
+#least wins 
+lose_1<-data %>% subset(PlayerYear == 2001 & team == "CHI",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#2000
+#most wins
+win_0<-data %>% subset(PlayerYear == 2000 & team == "LAL",
+                       select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#least wins 
+lose_0<-data %>% subset(PlayerYear == 2000 & team == "LAC",
+                        select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+
+#lets look at the trend of winners and losers 
+win00_18<-rbind(win_0,win_1,win_2,win_3,win_4,win_5,win_6,win_7,win_8,win_9,win_10,win_11,win_12S, win_12C,
+                win_13,win_14,win_15,win_16,win_17,win_18)
+win00_18["PlayerYear"]<- c(2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2012,2013,
+                           2014,2015,2016,2017,2018)
+
+#lets see how good teams are sticking with their salary cap
+ggplot(win00_18,aes(x=PlayerYear)) +
+  geom_line(aes(y = tmsalary), colour = "green") +
+  geom_line(aes(y = salcap), colour = "red") +
+  scale_x_continuous(breaks=c(2000,2002,2004,2006,2008,2010,2012,2014,2016,2018), 
+                     limits =c(2000,2018)) +
+                     ggtitle("Winning Teams and their Salary Cap")
+
+#totally spending above the cap
+
+##lets look at the losers now 
+
+lose00_18<-rbind(lose_0,lose_1,lose_2C,lose_2G,lose_3C,lose_3D,lose_4,lose_5,lose_6,lose_7,
+                 lose_8,lose_9,lose_10,lose_11,lose_12,
+                 lose_13,lose_14,lose_15,lose_16,lose_17,lose_18)
+lose00_18["PlayerYear"]<- c(2000,2001,2002,2002,2003,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,
+                            2014,2015,2016,2017,2018)
+#lets see how good teams are sticking with their salary cap
+ggplot(lose00_18,aes(x=PlayerYear)) +
+  geom_line(aes(y = tmsalary), colour = "green") +
+  geom_line(aes(y = salcap), colour = "red") +
+  scale_x_continuous(breaks=c(2000,2002,2004,2006,2008,2010,2012,2014,2016,2018), 
+                     limits =c(2000,2018)) +
+  ggtitle("Losing Teams and their salary cap")
+```
+
+Over the 19 seasons, winning teams have spent over the cap on average while losing teams have stayed relatively close to the cap. 
+
+The best teams vs the worst teams 
+
+```{r echo = FALSE, fig.width=18, fig.height=16}
+win00_18["Type"] <- "Winner"
+win00_18["team"]<- c("LAL","SAS","SAC","SAS","IND","PHO","DET","DAL","BOS","CLE","CLE",
+                     "CHI","SAS","CHI","MIA","SAS","GSW","GSW","GSW","HOU")
+lose00_18["Type"] <- "Loser"
+lose00_18["team"] <- c("LAC","CHI","CHI","GSW","CLE","DEN","ORL","ATL","POR","MEM","MIA","SAC","BRK",
+                       "MIN","CHO","ORL","MIL","NYK","PHI","BRK","PHO")
+winvslose <- rbind(win00_18, lose00_18)
+
+#Comparison of team spending Top vs worst team according to year 
+ggplot(winvslose, aes(x = team, y = tmsalary, fill = Type)) +
+  geom_bar(position = "stack", stat = "identity")  +
+  facet_wrap( ~ PlayerYear, scale = "free") +
+  ggtitle("Top vs Worst according to year") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+#lets look at a comparison of their top player salary
+ggplot(winvslose, aes(x = NameTopSal, y = TopPaid, fill = Type)) +
+  geom_bar(position = "stack", stat = "identity")  +
+  facet_wrap( ~ PlayerYear, scale = "free") +
+  ggtitle("Top team player vs Worst team player") 
+#Lets look at a comparison of their average salary 
+ggplot(winvslose, aes(x=PlayerYear, y = AvgSal, fill = Type, color = wins)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Top team vs Worst team avg player salary") 
+```
+
+It is important to note that even if the team is not good and is trying to tank for the number 1 draft pick overall it must still spend closely to the yearly cap.  Failing to do so the remaining cap will be spread amongst the current players on the active roster on a pro rata basis.  
+
+General managers thus elect to sign players to huge one year contracts just to meet the salary cap.  By doing this it allows them future flexibility to sign in potential superstars when they enter the free agent market in the future.  
+
+Good teams also on average have a higher paid star player than bad teams.  
+
+ 
+Best vs the Worst team in the last 19 seasons
+
+The 2016 Golden Stat Warriors had the greatest team success for a regular season in NBA history.  They won 73 games but unfortunately was not able to claim the title.  At the other end of the spectrum, the Charlotte Bobcats(Hornets) only won 7 games during the 2012 season.  
+
+```{r echo = FALSE}
+#----# Most sucessful NBA season 
+
+#Salary Spread
+data %>% group_by(salary) %>% 
+  subset(PlayerYear == 2016 & team == "GSW",
+         select = c(name, salary, ppg, EFG, t_reb, PlusMinus)) %>% 
+  arrange(desc(salary))
+#Team Statistics  
+data %>% subset(PlayerYear == 2016 & team == "GSW",
+                select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#plot the salary spread 
+goldenW <-data %>% subset(PlayerYear == 2016 & team == "GSW",
+                          select = c(name,salary)) 
+
+ggplot(goldenW,aes(name,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(goldenW$name))) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  scale_y_continuous(breaks=c(0,2500000,5000000,7500000,10000000, 
+                              12500000, 15000000,17500000), limits =c(0,17500000)) +
+  ggtitle("GSW 2016 Player Salary Spread")
+
+```
+
+If we closely look at the Golden State Warriors salary spread for that year.  Their MVP was only their 5th highest paid player.  Stephen Curry’s previous contract was at a discount due to his numerous ankle injuries before.  Both Klay Thompson and Draymond Green still did not have as many years in the league and were unable to unlock a higher salary per the rules of the CBA.  The warriors also did a good job negotiating their salaries.  Harrison Barnes was also still on his rookie salary.
+
+The warriors also did a good job in their team drafting.
+
+```{r echo=FALSE}
+#lets see how a 73 win team drafted
+goldenCity<-data %>% subset(team == "GSW", select = c(name,salary, ppg, EFG,rook1,rook2))
+goldenCity %>% subset(rook1 == "YES"| rook2 =="YES", select = c(name,salary, ppg, EFG))
+#also drafted Draymond Green 
+```
+
+For that Charlotte team, Michael Jordan at the time was a relatively new owner, who tried to run too many jobs of the team by himself.  This led to bad drafting choices as well as poor leadership choices within the organization.  
+
+```{r echo = FALSE}
+#Least succesful NBA season 
+bigL <- data %>% subset(PlayerYear == 2012 & team == "CHO",
+                        select = name:SalCap) 
+#Salary Spread
+data %>% group_by(salary) %>% 
+  subset(PlayerYear == 2012 & team == "CHO",
+         select = c(name, salary, ppg, EFG, t_reb, PlusMinus)) %>% 
+  arrange(desc(salary))
+#Team Statistics  
+data %>% subset(PlayerYear == 2012 & team == "CHO",
+                select = name:SalCap) %>% 
+  summarize(total = sum(salary),TopPaid = max(salary),
+            NameTopSal = name[which(salary == max(salary))],
+            highscore = max(ppg), 
+            NameTopPpg = name[which.max(ppg)],
+            efficient = max(EFG),
+            NameTopEFG = name[which.max(EFG)],
+            HighPlusMinus = max(PlusMinus),
+            NameTopPM = name[which.max(PlusMinus)],
+            LeastPaid = min(salary), 
+            NameLowSal = name[which.min(salary)],
+            AvgSal = mean(salary), 
+            tmsalary = median(tmsalary), salcap = median(SalCap),
+            OverUnder = (median(tmsalary)/(median(SalCap))), 
+            wins = median(TeamWins)) 
+#plot the salary spread 
+ggplot(bigL,aes(name,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(bigL$name))) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  scale_y_continuous(breaks=c(0,2500000,5000000,7500000,10000000,12500000), 
+                     limits =c(0,12500000)) +
+  ggtitle("CHO 2012 salary spread")
+```
+
+The Bobcats for that year lost 23 games in a row after their last win in March.  Their best player at the time was still a relatively new player to the league Kemba Walker.  Looking at the salary spread this team was clearly made to just tank.  If you look at their highest paid players, this team clearly was just trying to meet the salary cap and was rebuilding.  Many teams have followed this trend and if a team wants to rebuild and reset their team.  This type of formula might work, however the length of time and how much the local fan base will have to suffer during those years should be put under careful consideration as well. 
+
+```{r echo = FALSE}
+WinnerGSW<-sum(as.numeric(goldenW$salary))
+LoserCHO<-sum(as.numeric(bigL$salary))
+#compare the biggest winner with the biggest loser
+winVsloss <-data.frame(team = c("GSW", "CHO"), salary = c(WinnerGSW, LoserCHO))
+ggplot(winVsloss,aes(team,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(winVsloss$team))) +
+  ggtitle("worst vs the best")
+```
+
+5.	Looking at the average Joe of the NBA can we develop a threshold of what we should pay 
+
+What would the most average player look like.
+
+```{r echo = FALSE}
+AvgJoe
+
+p1<-ggplot(AvgJoe, aes(PlayerYear, salary, color = ppg)) + geom_line()  +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Avg Joe Salary and PPG")
+#number of points seems to dip after a bit maybe inefficient scoring 
+p2<-ggplot(AvgJoe, aes(PlayerYear, salary, color = efg)) + geom_line()  +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Avg Joe Salary and EFG")
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+```{r echo = FALSE}
+avgJoe19yrs<- AvgJoe %>%  summarize(name = "AvgJoe",height = mean(height), weight =mean(weight),
+                                    salary = mean(salary), plusMinus =mean(plusMinus), age =mean(age),
+                                    games = mean(games), start = mean(start), mins =mean(mins),
+                                    fg=mean(fg), fg_att =mean(fg_att), fg_per =mean(fg_per),
+                                    three =mean(three), three_att = mean(three_att), three_per =mean(three_per),
+                                    two = mean(two), two_att=mean(two_att), two_per =mean(two_per),
+                                    efg=mean(efg), ft=mean(ft), ft_att =mean(ft_att), ft_per = mean(ft_per),
+                                    o_reb =mean(o_reb), d_reb =mean(d_reb), t_reb =mean(t_reb), assist =mean(assist),
+                                    steal =mean(steal), block =mean(block), TO =mean(TO), fouls=mean(fouls),
+                                    ppg =mean(ppg))
+avgJoe19yrs
+```
+
+
+Looking through the years we can confirm again the trend that more teams are attempting more 3 pointers compared to two pointers.  Also, overall salary has been increasing at a much faster pace.  This is due to the contractual talks betweent he owners and players.  With more money coming in this increases baskeball related revenue and this increases the salary cap. 
+
+Now lets make a comparison of the average joe to different types of players and award winners in the NBA. From this we perhaps can develop a threshold or a reference point for salary talks. 
+
+
+Comparing Avg Joe salary and production to:
+	
+	
+A superstar
+		
+Tim Duncan vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#### select 15 players who played more than 15 years to see the trend of a players salary
+theVets <- data %>% subset(NumYears >= 15, select = c(PlayerYear:SalCap))
+superVets <- theVets %>%  subset(nba1 == "YES" | def1 == "YES", select = c(PlayerYear:SalCap))
+starVets <- theVets %>%  subset(nba2 == "YES" |nba3 == "YES" | def2 == "YES", select = c(PlayerYear:SalCap))
+roleVets <- theVets %>%  subset(nba1 != "YES" | def1 != "YES" |
+                                nba2 == "YES" |nba3 == "YES" | def2 == "YES",
+                                select = c(PlayerYear:SalCap))
+#Top SuperStars 5
+#Tim Duncan Kobe Bryant Lebron James Kevin Garnett Dirk Nowitzki 
+fundamental <- data %>% subset(name == "Tim Duncan", select= c(PlayerYear:SalCap))
+t1<-ggplot(fundamental, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Tim Duncan Life Cycle")
+#Compare to the average joe
+fundamental[,"Type"] <- "Superstar"
+timvsAvg<-fundamental %>% subset(Type == "Superstar", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                                 MinGames, ppg, EFG, Type))
+Avgvs<-AvgJoe %>% subset(Type == "Avg", select = c(PlayerYear,salary,height,plusMinus, 
+                                                   mins, ppg, efg, Type))
+colnames(Avgvs)[1:8] <- c("PlayerYear", "salary", "height_cm", "PlusMinus", 
+                          "MinGames", "ppg", "EFG", "Type")
+timvsAv <- rbind(timvsAvg, Avgvs)
+
+t2<-ggplot(timvsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green")+
+  ggtitle("Tim Vs Avg Joe")
+grid.arrange(t1, t2, ncol = 2)
+```
+
+Duncan salary and production is above the average player.  Late in his career he took pay cuts which brought his salary down. 
+
+		
+Lebron James vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+king <- data %>% subset(name == "LeBron James", select= c(PlayerYear:SalCap))
+j1<-ggplot(king, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Lebron Life Cycle")
+#Compare to the average joe
+king[,"Type"] <- "Superstar"
+lebrvsAvg<-king %>% subset(Type == "Superstar", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                           MinGames, ppg, EFG, Type))
+
+lebrvsAv <- rbind(lebrvsAvg, Avgvs)
+
+j2<-ggplot(lebrvsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green")+
+  ggtitle("Lebron vs Avg Joe")
+grid.arrange(j1, j2, ncol = 2)
+```
+
+Lebron salary has kept going up.  His body has not slowed down either.  The amount of minutes played has not really decreased at all.  Seems like a player anomally.  
+
+
+Dirk vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+wunderkid <- data %>% subset(name == "Dirk Nowitzki", select= c(PlayerYear:SalCap))
+d1<-ggplot(wunderkid, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Dirk NBA Player Lifecycle")
+#Compare to the average joe 
+wunderkid[,"Type"] <- "Superstar"
+dirkvsAvg<-wunderkid %>% subset(Type == "Superstar", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                                MinGames, ppg, EFG, Type))
+
+dirkvsAv <- rbind(dirkvsAvg, Avgvs)
+
+d2<-ggplot(dirkvsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Dirk Vs Avg Joe")
+grid.arrange(d1, d2, ncol = 2)
+```
+
+Dirk took pay cuts as well.  His production also started to decrease.  It would be interesting to compare height and player life cycle. 
+
+		A star
+		
+		
+Vince vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#Stars 5
+#Vince Carter Manu Ginobli Nash Carmelo Anthony Pau Gasol Tony Parker
+higlight <- data %>% subset(name == "Vince Carter", select= c(PlayerYear:SalCap)) 
+v1<-ggplot(higlight, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Vince NBA Lifecycle")
+#Compare to the average joe 
+higlight[,"Type"] <- "Star"
+vincevsAvg<-higlight %>% subset(Type == "Star", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                           MinGames, ppg, EFG, Type))
+
+vincevsAv <- rbind(vincevsAvg, Avgvs)
+
+v2<-ggplot(vincevsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") + 
+  ggtitle("Vince vs Avg Joe")
+grid.arrange(v1, v2, ncol = 2)
+```
+
+Vince Carters Life cycle goes up in years where it reaches its peak in his 30s then begins to decrease. Pay goes up because of new contract deals for NBA players increasing the overall salary cap.
+
+Melo vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+melo <- data %>% subset(name == "Carmelo Anthony", select= c(PlayerYear:SalCap))
+me1<-ggplot(melo, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Melo Life Cycle")
+#Compare to the average joe
+melo[,"Type"] <- "Star"
+melovsAvg<-melo %>% subset(Type == "Star", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                      MinGames, ppg, EFG, Type))
+
+melovsAv <- rbind(melovsAvg, Avgvs)
+
+me2<-ggplot(melovsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Melo vs Avg Joe")
+grid.arrange(me1, me2, ncol = 2)
+```
+
+There is no decreasein salary for Melo.  However, this player is out of the league now due to the ineffciency.  
+
+Gasol vs Avg Joe 
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+gasol<- data %>% subset(name == "Pau Gasol", select= c(PlayerYear:SalCap))
+ga1<-ggplot(gasol, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") + 
+  ggtitle("Gasol Lifecycle")
+#Compare to the average joe
+gasol[,"Type"] <- "Star"
+gasolvsAvg<-gasol %>% subset(Type == "Star", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                        MinGames, ppg, EFG, Type))
+
+gasolvsAv <- rbind(gasolvsAvg, Avgvs)
+
+ga2<-ggplot(gasolvsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Gasol vs Avg Joe")
+grid.arrange(ga1, ga2, ncol = 2)
+```
+
+Gasol also had a decrease in salary but the new TV money seems to have set in a new reference point on how much veterans should be paid. 
+		Role Player 
+Mike Miller vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+mMiller <- data %>% subset(name == "Mike Miller", select= c(PlayerYear:SalCap)) 
+#salary in relation to the age and mins per game 
+mm1<-ggplot(mMiller, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Mike Miller Life Cycle")
+#Compare to the average joe 
+mMiller[,"Type"] <- "Role"
+mMillervsAvg<-mMiller %>% subset(Type == "Role", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                            MinGames, ppg, EFG, Type))
+
+mMillervsAv <- rbind(mMillervsAvg, Avgvs)
+
+mm2<-ggplot(mMillervsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Mike Miller vs Avg Joe")
+grid.arrange(mm1, mm2, ncol = 2)
+```
+
+Mike Miller took a pay cut probably to play for a contender. 
+
+Crawford vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+crawford <- data %>% subset(name == "Jamal Crawford", select= c(PlayerYear:SalCap)) 
+#salary in relation to the age and mins per game 
+cf1<-ggplot(crawford, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Crawford Life Cycle")
+
+#Compare to the average joe 
+crawford[,"Type"] <- "Role"
+crawfordvsAvg<-crawford %>% subset(Type == "Role", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                              MinGames, ppg, EFG, Type))
+
+crawfordvsAv <- rbind(crawfordvsAvg, Avgvs)
+
+cf2<-ggplot(crawfordvsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Crawford vs Avg Joe")
+grid.arrange(cf1, cf2, ncol = 2)
+```
+
+Jamal Crawford got a huge payday after the new TV money after an initial decrease.  
+
+Nene Hilario vs Avg Joe 
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#Role Player 5 
+#Nene Hilario Mike Miller Kyle Korver Mike Dunleavy Jamal Crawford Derrik Fisher  
+nene <- data %>% subset(name == "Nene Hilario", select= c(PlayerYear:SalCap)) 
+#salary in relation to the age and mins per game 
+ne1<-ggplot(nene, aes(Age, salary, color = MinGames)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Nene Life Cycle")
+
+#Compare to the average joe
+nene[,"Type"] <- "Role"
+nenevsAvg<-nene %>% subset(Type == "Role", select = c(PlayerYear, salary, height_cm, PlusMinus,
+                                                      MinGames, ppg, EFG, Type))
+
+nenevsAv <- rbind(nenevsAvg, Avgvs)
+
+ne2<-ggplot(nenevsAv, aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green") +
+  ggtitle("Nene vs Avg Joe")
+grid.arrange(ne1, ne2, ncol = 2)
+```
+
+Nene salary decreased.  Probably got the veterans minimum with the new 2017 CBA.
+
+MVP Salary vs Avg Joe	
+		
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#MVP
+mvpdata<-data %>% subset(mvp == "YES", select =c(PlayerYear, salary, height_cm, PlusMinus,
+                                                 MinGames, ppg, EFG))
+mvpdata
+mvpdata[,"Type"] <- "MVP"
+mvpdatavsAv <- rbind(mvpdata, Avgvs)
+
+ggplot(mvpdatavsAv, aes(x=PlayerYear, y = salary, fill = Type, color = PlusMinus)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green")+
+  scale_x_continuous(breaks=c(2000,2002,2004,2006,2008,2010,2012,2014,2016,2018), 
+                     limits =c(2000,2018)) +
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x + 0.2), "last.points", cex = 0.8)) +
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x - 0.2), "first.points", cex = 0.8)) +
+  ggtitle("MVP vs Avg Joe")
+```
+
+MVP salary of course is above the average joe salary.  Winning the MVP award allows players to get the maximum contract.  Other ways to obtain the max contract including making the All-NBA team consistently.  This is in the CBA called the designated player exception. 
+
+The designated player exception:
+Applies to players that have 7 to 9 years of NBA experience.  It allows players to get paid the max which is 35 percent of the current salary cap.  Players before needed to be 10 years in the league before making 35 percent. (7 to 9 made 30, 0 to 6 made 25 percent of the salary cap.)  
+The requirements also are that the player must make two All-NBA teams or win defensive player of the year or MVP 3 years prior to signing the deal.  
+
+[CBA](https://www.foxsports.com/nba/story/nba-6-important-aspects-of-the-new-collective-bargaining-agreement-122016)
+
+The Derrick Rose rule allows rookies to sign for 30 percent of the team salary cap if they were voted to the all star game twice and got on two All-NBA teams.  Winning the MVP would also qualify the player to get 30 percent of the salary cap.  
+
+DPOY Salary vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#DPOY
+dpoydata<-data %>% subset(dpoy == "YES", select =c(PlayerYear, salary, height_cm, PlusMinus,
+                                                   MinGames, ppg, EFG))
+dpoydata[,"Type"] <- "DPOY"
+dpoydatavsAv <- rbind(dpoydata, Avgvs)
+
+dpoydata
+
+ggplot(dpoydatavsAv, aes(x=PlayerYear, y = salary, fill = Type, color = PlusMinus)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green")+
+  scale_x_continuous(breaks=c(2000,2002,2004,2006,2008,2010,2012,2014,2016,2018), 
+                     limits =c(2000,2018)) +
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x + 0.2), "last.points", cex = 0.8)) +
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x - 0.2), "first.points", cex = 0.8)) +
+  ggtitle("DPOY vs Avg Joe")
+
+```
+
+We can see that winning Defensive player of the year the salary is higher than the average joe.  This is due to the requirements of the CBA as well as the relative market demand for these players.  
+
+ROY Salary vs Avg Joe
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#ROY
+roydata<-data %>% subset(roy == "YES", select =c(PlayerYear, salary, height_cm, PlusMinus,
+                                                 MinGames, ppg, EFG))
+roydata
+roydata[,"Type"] <- "ROY"
+roydatavsAv <- rbind(roydata, Avgvs)
+
+ggplot(roydatavsAv, aes(x=PlayerYear, y = salary, fill = Type, color = PlusMinus)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green")+
+  scale_x_continuous(breaks=c(2000,2002,2004,2006,2008,2010,2012,2014,2016,2018), 
+                     limits =c(2000,2018)) +
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x + 0.2), "last.points", cex = 0.8)) +
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x - 0.2), "first.points", cex = 0.8)) +
+  ggtitle("ROY vs Avg Joe")
+```
+
+If we look at the rookie salary scale it seems to be going up and down.  There are many reasons behind this.  
+
+The first one being not always a player in the first round will win rookie of the year.  Especially if that draft class is really weak.  Malcolm Brogdon won rookie of the year but because he was picked in the second round 36th overall he was paid relatively low compared to a rookie players drafted in the first round. 
+
+You might be wondering why number 1 overall pick Ben Simmons had such a low salary.  Ben Simmons was drafted in 2017, but because of an injury was unable to play the entire season. The new CBA was in affect for rookies for the start of the 2018 season. Which saw rookies on average get a pay increase.  However, since Ben Simmons contract was signed from the original CBA his salary was relatively much lower. 
+
+Mid-level exception player vs Avg Joe 
+	
+The mid-level exception allows NBA teams to sign players they normally would not be able to sign if they were over the salary cap.  
+
+Before the 2011 CBA it was set to the average NBA salary that was over the cap.  After that it was set to a certain amount each year.  For the 2017 CBA the apron was set to 6 million above the tax line for the 2017 and 2018 season.  This number would go up and down depending on the current salary cap for the year. 
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#Mid level exception 
+
+# the med level exception lets go with if you are over the salarycap and are a taxpayer since we want to compete for a winning season
+#for salaries lets go 25 percent under and over for negotiation skills 
+#5,192,000
+med_2018 <- subset(data, PlayerYear==2018 & salary <= 6490000 & salary >= 3894000 & DraftYear != 2018 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+#3,477,000
+med_2017 <- subset(data, PlayerYear==2017 & salary <= 4346250 & salary >= 2607750 & DraftYear != 2017 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+#3,376,000
+med_2016 <- subset(data, PlayerYear==2016 & salary <= 4220000 & salary >= 2532000 & DraftYear != 2016 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+#3,278,000
+med_2015 <- subset(data, PlayerYear==2015 & salary <= 4097500 & salary >= 2458500 & DraftYear != 2015 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+#3,183,000
+med_2014 <- subset(data, PlayerYear==2014 & salary <= 3978750 & salary >= 2387250 & DraftYear != 2014 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+#3,090,000
+med_2013 <- subset(data, PlayerYear==2013 & salary <= 3862500 & salary >= 2317500 & DraftYear != 2013 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+#3,000,000
+med_2012 <- subset(data, PlayerYear==2012 & salary <= 3750000 & salary >= 2250000 & DraftYear != 2012 & Age > 23 ,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+# Before the 2011 CBA, the MLE was equal to the average NBA salary for all teams over the cap
+# mutate 
+
+midexc2011<-subset(data, PlayerYear==2011 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2011$salary)
+
+#4990128 
+med_2011 <- subset(data, PlayerYear==2011 & salary <= 6237660 & salary >= 3742596 & DraftYear != 2011 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+
+
+midexc2010<-subset(data, PlayerYear==2010 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2010$salary)
+
+#5055895
+med_2010 <- subset(data, PlayerYear==2010 & salary <= 6319868 & salary >= 3791921 & DraftYear != 2010 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+
+midexc2009<-subset(data, PlayerYear==2009 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2009$salary)
+#4927921
+med_2009 <-subset(data, PlayerYear==2009 & salary <= 6159901 & salary >= 3695940 & DraftYear != 2009 & Age > 23,
+                  select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                             started))
+midexc2008<-subset(data, PlayerYear==2008 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2008$salary)
+#4791522
+med_2008 <- subset(data, PlayerYear==2008 & salary <= 5989402 & salary >= 3593641 & DraftYear != 2008 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+midexc2007<-subset(data, PlayerYear==2007 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2007$salary)
+#4459748
+med_2007 <- subset(data, PlayerYear==2007 & salary <= 5574685 & salary >= 3344811 & DraftYear != 2007 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+midexc2006<-subset(data, PlayerYear==2006 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2006$salary)
+#4475003
+med_2006 <- subset(data, PlayerYear==2006 & salary <= 5593753 & salary >= 3356252 & DraftYear != 2006 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+midexc2005<-subset(data, PlayerYear==2005 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2005$salary)
+#4297463
+med_2005 <-subset(data, PlayerYear==2005 & salary <= 5371828 & salary >= 3223097 & DraftYear != 2005 & Age > 23,
+                  select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                             started))
+midexc2004<-subset(data, PlayerYear==2004 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2004$salary)
+#4113290
+med_2004 <-subset(data, PlayerYear==2004 & salary <= 5141612 & salary >= 3084967 & DraftYear != 2004 & Age > 23,
+                  select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                             started))
+midexc2003<-subset(data, PlayerYear==2003 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2003$salary)
+#3844233
+med_2003 <-subset(data, PlayerYear==2003 & salary <= 4805291 & salary >= 2883174 & DraftYear != 2003 & Age > 23,
+                  select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                             started))
+midexc2002<-subset(data, PlayerYear==2002 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2002$salary)
+#3674357
+med_2002 <-subset(data, PlayerYear==2002 & salary <= 4592946 & salary >= 2755767 & DraftYear != 2002 & Age > 23,
+                  select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                             started))
+midexc2001<-subset(data, PlayerYear==2001 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2001$salary)
+#3642971
+med_2001 <-subset(data, PlayerYear==2001 & salary <= 4553713 & salary >= 2732228 & DraftYear != 2001 & Age > 23,
+                  select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                             started))
+midexc2000<-subset(data, PlayerYear==2000 & overUnder > 1.05,
+                   select = c(team, tmsalary, salary))
+#mean(midexc2000$salary)
+#3084692
+med_2000 <- subset(data, PlayerYear==2000 & salary <= 3855865 & salary >= 2313519 & DraftYear != 2000 & Age > 23,
+                   select = c(name,PlayerYear,salary,height_cm,PlusMinus,MinGames, ppg, EFG, Games,
+                              started))
+
+
+mr_med <-rbind(med_2018, med_2017, med_2016, med_2015, med_2014, med_2013,
+               med_2012, med_2011, med_2010, med_2009, med_2008, med_2007,
+               med_2006, med_2005, med_2004, med_2003, med_2002, med_2001, med_2000)
+notable_med<-mr_med %>% subset(ppg >= 10 & PlusMinus >= 5 & MinGames >= 15 & Games >= 40, 
+                  select = c(name, ppg, PlusMinus, MinGames, Games, PlayerYear))
+#head(notable_med, n = 10)
+#these are some of the notable names that could have been signed for the mid level exception. 
+#of course not that accurate because damian lilard and klay thompson shouldn't be on this list.
+
+```
+
+What to Expect with a mid-level exception player. 
+
+```{r echo = FALSE, fig.width=14, fig.height=12}
+#lets look at the mean average of med exception players vs the average players over the years 
+
+med_2018a<- med_2018 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2017a<- med_2017 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2016a<- med_2016 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2015a<- med_2015 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2014a<- med_2014 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2013a<- med_2013 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2012a<- med_2012 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2011a<- med_2011 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2010a<- med_2010 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2009a<- med_2009 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2008a<- med_2008 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2007a<- med_2007 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2006a<- med_2006 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2005a<- med_2005 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2004a<- med_2004 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2003a<- med_2003 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2002a<- med_2002 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2001a<- med_2001 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+med_2000a<- med_2000 %>% summarize(PlayerYear=mean(PlayerYear), salary = mean(salary), height_cm = mean(height_cm),
+                                   PlusMinus = mean(PlusMinus), MinGames = mean(MinGames), ppg = mean(ppg),
+                                   EFG = mean(EFG))
+
+mr_meda <-rbind(med_2018a, med_2017a, med_2016a, med_2015a, med_2014a, med_2013a,
+               med_2012a, med_2011a, med_2010a, med_2009a, med_2008a, med_2007a,
+               med_2006a, med_2005a, med_2004a, med_2003a, med_2002a, med_2001a, med_2000a)
+mr_meda
+mr_meda[,"Type"] <- "MED"
+mr_medavsAv <- rbind(mr_meda, Avgvs)
+
+ggplot(mr_medavsAv , aes(x=PlayerYear, y = salary, fill = Type, color = ppg)) +
+  geom_line() +
+  scale_colour_gradient(low = "red",high = "green")+
+  scale_x_continuous(breaks=c(2000,2002,2004,2006,2008,2010,2012,2014,2016,2018), 
+                     limits =c(2000,2018))+
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x + 0.2), "last.points", cex = 0.8)) +
+  geom_dl(aes(label = Type), method = list(dl.trans(x = x - 0.2), "first.points", cex = 0.8)) +
+  ggtitle("Mid Level Except vs AvgJoe")
+```
+
+Because contract details on how teams used their mid-level exceptions through 2000-2018 wasn’t available online.  I used a over and under 25 percent rule for the mid-level exception set for that current year.  
+
+After the 2012 season the NBA wanted to cut down on teams who are over the salary cap from signing good players.  A good example of this is the Miami Heat who used their mid-level exception on Shane Battier during the 2012 season.  Under the 2011 CBA going into the 2012 season, it only allowed teams over the luxury tax threshold to use up to 3 million dollars.  Of course, the mid- level exception could be used on multiple players as well thus the decrease compared to the average salary.  During the 2017 CBA this was revised and saw teams were able to spend more on the mid-level exception up to 6 million dollars. 
+
+Still it is below the average, meaning the use of the mid-level exception to possibly find a good player to fill in the team has gotten more difficult.  As more and more money is being pour into the league and the increase of salary cap, more teams are able to test the market and command more than the mid- level exception.  
+
+
+
+**6.	What statistics are explaining salary**
+
+a)	Trying to look at variables that explain salary the most
+
+When looking at the correlation with player salary.  The highest correlation is turnovers(0.51), PPG(0.59), started(0.48) and two(0.56).  While the weakest was EFG(0.19) 
+
+We will be looking at age, total rebounds, turnover, points per game, field goals, started, threes, twos, assists, blocks, steals, effective field goal percentage and number of years played in the league. 
+
+```{r echo = FALSE}
+#Lets make a multiple linear regression model
+lmodel<- lm(salary~Age + t_reb + TO + ppg+ FG+ 
+              started+three+two+assist+block, +steal+EFG +NumYears, data=data)
+lmodel
+summary(lmodel)
+coef(summary(lmodel))
+#anova(lmodel)
+SSE3 = sum(lmodel$residuals^2)
+#SSE3
+```
+
+RMSE
+
+```{r echo = FALSE}
+RMSE3 = sqrt(SSE3/nrow(data))
+RMSE3
+#adjusted R squared looks good however we could be dealing with multiple colinieartiy with Age and number of years played
+```
+
+The adjusted R squared was 0.9116 which is pretty good.  However, we could be dealing with multicollinearity between twos, threes and field goals made.  Also, with age and number of years played.  
+
+So next we should test the model with these factors removed as well as the lowest correlation EFG.
+
+```{r echo = FALSE}
+#lets remove the weakest correlation of EFG assists since it did not show significant
+#and Age, two and three to see if it improves the model 
+lmodel2<- lm(salary~t_reb + TO + ppg+ FG+ 
+              started+block, +steal +NumYears, data=data)
+lmodel2
+summary(lmodel2)
+coef(summary(lmodel2))
+#anova(lmodel2)
+SSE4 = sum(lmodel2$residuals^2)
+SSE4
+RMSE4 = sqrt(SSE4/nrow(data))
+```
+
+RMSE
+
+```{r echo = FALSE}
+RMSE4
+```
+
+
+Adjusted R squared worsened therefore we should add back the variables and test without EFG.
+
+```{r echo = FALSE}
+#Lets add back in some of the values and just remove the lowest correlation 
+lmodel3<- lm(salary~t_reb + TO + ppg+ FG+ Age +
+              started+three+two+assist+block, +steal+NumYears, data=data)
+lmodel3
+summary(lmodel3)
+coef(summary(lmodel3))
+#anova(lmodel3)
+SSE5 = sum(lmodel3$residuals^2)
+SSE5
+RMSE5 = sqrt(SSE5/nrow(data))
+```
+
+RMSE
+
+```{r echo = FALSE}
+RMSE5
+``` 
+
+The adjusted R squared was better than the first model.  It also had a high F stat and low p value.  
+
+So, can these particular variables determine a salary?  While the model fit was good at 0.9152 with a high F stat of 9678 and a extremely low p-value showing significance.  However, there has been 3 different collective bargaining agreements in the 2000-2018 NBA seasons.  Each CBA brings new type of agreements between the players association and the NBA owners.  
+
+Let’s first look again at the trend of salary. 
+
+```{r echo = FALSE}
+data %>% ggplot(aes(PlayerYear, SalCap)) + 
+  geom_point() +
+  ggtitle("Player Year vs Salary Cap")
+```
+
+
+We can see there was a sudden increase during the 2015 season.  We could be dealing with a Regime bias in our data.  Therefore, perhaps it might be better to split up the data according to CBA.  
+
+Because there was such an increase in salary we might want to look at if it might be better to separate the data according to the CBAs. 1999 CBA, 2005 CBA, 2011 CBA and 2017 CBA.  
+
+What is the CBA(Collective Bargaining Agreement)
+
+The collective bargaining agreement is a contractual agreement between the NBA, the NBA owners as well as the NBA players.  The NBA players are represented by the president of the players union which is currently held by Chris Paul.  A new CBA is signed every 6 years that includes discussions of basketball related income, player salary, pension, health care, etc… If there is no agreement between the NBA owners, NBA and players a NBA lockout will continue until the sides reach an agreement.  Thus leading to a shorter season played.  
+
+
+b)	Collective Bargaining agreements affecting the NBA.
+
+Let us split the 2000 to 2018 season into 3 CBA’s.  1999-2005, 2006-2011 and 2012-2018.  
+
+```{r echo = FALSE}
+#collecting bargaining agreement 1999-2005, 2006-2011, 2012-2018
+cba1<-data %>% subset(PlayerYear == 2000|PlayerYear == 2001|PlayerYear == 2002|PlayerYear == 2003|
+                        PlayerYear == 2004|PlayerYear == 2005, select = c(PlayerYear, team, name, salary,
+                                                                          height_cm, weight_lb, school,
+                                                                          country,DraftYear, DraftRound,
+                                                                          DraftNum, PlusMinus, Pos, Age,
+                                                                          Games, started, MinGames,
+                                                                          FG, FG_att, three, three_att,
+                                                                          two, two_att, FT, FT_att,
+                                                                          o_reb, d_reb, t_reb, assist,
+                                                                          steal, block, TO, fouls, ppg,
+                                                                          infl, mvp,mip,SixthMan,dpoy,
+                                                                          roy, nba1, nba2, nba3, rook1, rook2,
+                                                                          def1,def2, FG_per, two_per, EFG,
+                                                                          three_per, FT_per, TeamWins, NumYears,
+                                                                          tmsalary, SalCap, overUnder))
+cba2 <- data %>% subset(PlayerYear == 2006|PlayerYear == 2007|PlayerYear == 2008|PlayerYear == 2009|
+  PlayerYear == 2010|PlayerYear == 2011, select =c(PlayerYear, team, name, salary,
+                                                   height_cm, weight_lb, school,
+                                                   country,DraftYear, DraftRound,
+                                                   DraftNum, PlusMinus, Pos, Age,
+                                                   Games, started, MinGames,
+                                                   FG, FG_att, three, three_att,
+                                                   two, two_att, FT, FT_att,
+                                                   o_reb, d_reb, t_reb, assist,
+                                                   steal, block, TO, fouls, ppg,
+                                                   infl, mvp,mip,SixthMan,dpoy,
+                                                   roy, nba1, nba2, nba3, rook1, rook2,
+                                                   def1,def2, FG_per, two_per, EFG,
+                                                   three_per, FT_per, TeamWins, NumYears,
+                                                   tmsalary, SalCap, overUnder))
+cba3 <- data %>% subset(PlayerYear == 2012|PlayerYear == 2013|PlayerYear == 2014|PlayerYear == 2015| 
+                          PlayerYear == 2016| PlayerYear == 2017|PlayerYear == 2018, select = c(PlayerYear, team, name, salary,
+                                                                                                height_cm, weight_lb, school,
+                                                                                                country,DraftYear, DraftRound,
+                                                                                                DraftNum, PlusMinus, Pos, Age,
+                                                                                                Games, started, MinGames,
+                                                                                                FG, FG_att, three, three_att,
+                                                                                                two, two_att, FT, FT_att,
+                                                                                                o_reb, d_reb, t_reb, assist,
+                                                                                                steal, block, TO, fouls, ppg,
+                                                                                                infl, mvp,mip,SixthMan,dpoy,
+                                                                                                roy, nba1, nba2, nba3, rook1, rook2,
+                                                                                                def1,def2, FG_per, two_per, EFG,
+                                                                                                three_per, FT_per, TeamWins, NumYears,
+                                                                                                tmsalary, SalCap, overUnder))
+```
+
+1999 CBA
+
+```{r echo = FALSE}
+lmodelcba1<- lm(salary~Age + t_reb + TO + ppg+ FG+ 
+                    started+three+two+assist+block, +steal +NumYears, data=cba1)
+lmodelcba1
+summary(lmodelcba1)
+SSEcba1 = sum(lmodelcba1$residuals^2)
+RMSEcba1 = sqrt(SSEcba1 /nrow(data))
+```
+
+Mean 1999 CBA salary
+
+```{r echo = FALSE}
+mean(cba1$salary)
+```
+
+RMSE 1999 CBA
+
+```{r echo =FALSE}
+RMSEcba1
+```
+
+2005 CBA
+
+```{r echo = FALSE}
+lmodelcba2<- lm(salary~Age + t_reb + TO + ppg+ FG+ 
+                  started+three+two+assist+block, +steal +NumYears, data=cba2)
+lmodelcba2
+summary(lmodelcba2)
+SSEcba2 = sum(lmodelcba2$residuals^2)
+RMSEcba2 = sqrt(SSEcba2 /nrow(data))
+```
+
+Mean 2005 CBA salary
+
+```{r echo = FALSE}
+mean(cba2$salary)
+```
+
+RMSE CBA 2005
+
+```{r echo = FALSE}
+RMSEcba2
+```
+
+2011 CBA
+
+```{r echo = FALSE}
+lmodelcba3<- lm(salary~Age + t_reb + TO + ppg+ FG+ 
+                  started+three+two+assist+block, +steal +NumYears, data=cba3)
+lmodelcba3
+summary(lmodelcba3)
+SSEcba3 = sum(lmodelcba3$residuals^2)
+RMSEcba3 = sqrt(SSEcba3 /nrow(data))
+```
+
+Mean 2011 CBA Salary
+
+```{r echo = FALSE}
+mean(cba3$salary)
+```
+
+RMSE 2011 CBA
+
+```{r echo = FALSE}
+RMSEcba3
+```
+
+
+For the 1999-2005 season we can see that the adjusted R squared got better at 0.9235. However, the adjusted R squared was best for the 2006-2011 season with an adjusted R squared of 0.9891.  However, the model got worst at 0.8891 looking at the 2012-2018 data.  
+
+While, the model still does a good job for the latest CBA the adjusted R squared could become worse as we get closer to the next CBA contract in 6 years if both mutual sides opt out or in 10 years if both sides do not opt out.  
+
+###**Conclusion**
+
+So, can we use statistics like Billy Jeanne to build a perfect team on a tight a budget?  The closest thing we have to a modern Moneyball team is the Houston Rockets.  Darryl Morrey the general manager is an avid user of modern player analytics to gain advantages over the opposing team.  The 2018 Houston rockets had a hugely successful 2018 season winning 65 games and almost making it to the NBA finals.  This of course is only one instance where “Moneyball” NBA worked for a regular season. 
+
+The one important thing we need to remember is that baseball isn’t basketball.  Basketball has a soft cap while baseball has a hard cap.  A soft cap allows teams over the salary cap to have different exceptions and provisions to allow teams to have more flexibility. 
+
+If we did try to Moneyball a NBA team.  The starting point of course what we should look at is how well the player shoots the three-point shot.  The next thing of course is to find a taller player as it would seem through the draft these players are drafted the most.  From there this player will take 25-35 percent of the salary.  Looking at the model of most of the top teams in the NBA in the 19 seasons you would need another player that would be signed to the max.  This would take close to 70 percent of the salary cap already.  
+
+However, this isn’t a video game and there are many limitations that we have to consider that the data cannot answer. The multiple linear regression model that we developed and had an R squared of 0.9116 might be invalid under the new CBA.  This is evidenced by the new terms in the current CBA as well as the ridiculous increase in salary due to increase in Basketball Related Income.  With the new CBA there is only really one valid season that can be tested.  Which means on average 450 observations and because there are so few observations, we might be suffering from small sample bias where we are overfitting the model.  Also, with the addition of the supermax this could make past data irrelevant in trying to apply Moneyball to the NBA. 
+
+[supermax](https://www.sbnation.com/nba/2017/4/7/15220080/paul-george-pacers-all-nba-vote-extension-70-million-designated-player-future)
+
+The limits of our data can’t tell us player Chemistry with the team and other players.  Some players will sign on a discount if they enjoy playing with other players or a specific team.  Post career income plans that the NBA provides to its players.  Also, if better benefits would decrease the percentage of basketball related income.  This number decreased from 57 percent to 51 percent from the 2011 CBA to 2017 CBA.  Other things that might affect salary are bonus stipulations team owners award their players.  For example, staying healthy for a number of games per year, doing mentoring roles for younger players, winning the assist award or points per game award.  
+
+Hence, trying to use Moneyball in the NBA looks sexy and might work on paper, but with the uncertainty of future CBA agreements playing a huge role on player salary.  In reality players aren’t robots or video game characters.  There is a lot of uncertainty that is unaccounted for.  While cleaning this data, there were countless teams who hoped to build a great team with players who put up great statistics.  Only to be locked in an unfavorable contract due to player injury or because the player could not mesh in with the team culture.  Even with a stretch provision to provide cap relief, we saw players like Carmelo Anthony and Chris Bosh take over huge amounts of the team’s cap space which crippled their franchise financially.  
