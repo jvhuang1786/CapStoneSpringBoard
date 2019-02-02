@@ -1,0 +1,260 @@
+"","X1","X2","X3","X4","X5","X6","X7","X8","X9","X10"
+"1","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team","All-Defensive 1st Team"
+"2","YEAR","PLAYER","POS","TEAM","FG%","PPG","RPG","APG","BLKPG",NA
+"3","2018","Jrue Holiday","G","New Orleans Pelicans",".494","19.0","4.5","6.0","0.8",NA
+"4","","Anthony Davis","F","New Orleans Pelicans",".534","28.1","11.1","2.3","2.6",NA
+"5","","Robert Covington","F","Philadelphia 76ers",".413","12.6","5.4","2.0","0.9",NA
+"6","","Victor Oladipo","G","Indiana Pacers",".477","23.1","5.2","4.3","0.8",NA
+"7","","Rudy Gobert","C","Utah Jazz",".622","13.5","10.7","1.4","2.3",NA
+"8","2017","Chris Paul","G","LA Clippers",".476","18.1","5.0","9.2","0.1",NA
+"9","","Patrick Beverley","G","Houston Rockets",".420","9.5","5.9","4.2","0.4",NA
+"10","","Kawhi Leonard","F","San Antonio Spurs",".485","25.5","5.8","3.5","0.7",NA
+"11","","Draymond Green","F","Golden State Warriors",".418","10.2","7.9","7.0","1.4",NA
+"12","","Rudy Gobert","C","Utah Jazz",".661","14.0","12.8","1.2","2.6",NA
+"13","2016","Chris Paul","G","LA Clippers",".462","19.5","4.2","10.0","0.2",NA
+"14","","DeAndre Jordan","C","LA Clippers",".703","12.7","13.8","1.2","2.3",NA
+"15","","Avery Bradley","G","Boston Celtics",".448","15.2","2.9","2.1","0.3",NA
+"16","","Kawhi Leonard","F","San Antonio Spurs",".505","21.2","6.8","2.6","1.0",NA
+"17","","Draymond Green","F","Golden State Warriors",".490","14.0","9.5","7.4","1.4",NA
+"18","2015","Tony Allen","G","Memphis Grizzlies",".495","8.6","4.4","1.4","0.5",NA
+"19","","Chris Paul","G","LA Clippers",".485","19.1","4.6","10.2","0.2",NA
+"20","","DeAndre Jordan","C","LA Clippers",".710","11.5","15.0","0.7","2.2",NA
+"21","","Kawhi Leonard","F","San Antonio Spurs",".479","16.5","7.2","2.5","0.8",NA
+"22","","Draymond Green","F","Golden State Warriors",".443","11.7","8.2","3.7","1.3",NA
+"23","2014","Andre Iguodala","F","Golden State Warriors",".480","9.3","4.7","4.2","0.3",NA
+"24","","Chris Paul","G","LA Clippers",".467","19.1","4.3","10.7","0.1",NA
+"25","","Joakim Noah","C","Chicago Bulls",".475","12.6","11.3","5.4","1.5",NA
+"26","","Serge Ibaka","F","Oklahoma City Thunder",".536","15.1","8.8","1.0","2.7",NA
+"27","","Paul George","F","Indiana Pacers",".424","21.7","6.8","3.5","0.3",NA
+"28","2013","Tyson Chandler","C","New York Knicks",".638","10.4","10.7","0.9","1.1",NA
+"29","","LeBron James","F","Miami Heat",".565","26.8","8.0","7.3","0.9",NA
+"30","","Tony Allen","G","Memphis Grizzlies",".445","8.9","4.6","1.2","0.6",NA
+"31","","Chris Paul","G","LA Clippers",".481","16.9","3.7","9.7","0.1",NA
+"32","","Joakim Noah","C","Chicago Bulls",".481","11.9","11.1","4.0","2.1",NA
+"33","","Serge Ibaka","F","Oklahoma City Thunder",".573","13.2","7.7","0.5","3.0",NA
+"34","2012","LeBron James","F","Miami Heat",".531","27.1","7.9","6.2","0.8",NA
+"35","","Tony Allen","G","Memphis Grizzlies",".469","9.8","4.0","1.4","0.6",NA
+"36","","Dwight Howard","C","Los Angeles Lakers",".573","20.6","14.5","1.9","2.1",NA
+"37","","Chris Paul","G","LA Clippers",".478","19.8","3.6","9.1","0.1",NA
+"38","","Serge Ibaka","F","Oklahoma City Thunder",".535","9.1","7.5","0.4","3.7",NA
+"39","2011","Kobe Bryant","SF","Los Angeles Lakers",".451","25.3","5.1","4.7","0.1",NA
+"40","","Kevin Garnett","PF","Boston Celtics",".528","14.9","8.9","2.4","0.8",NA
+"41","","LeBron James","SF","Miami Heat",".510","26.7","7.5","7.0","0.6",NA
+"42","","Dwight Howard","C","Orlando Magic",".593","22.9","14.1","1.4","2.4",NA
+"43","","Rajon Rondo","PG","Boston Celtics",".475","10.6","4.4","11.2","0.2",NA
+"44","2010","Kobe Bryant","SF","Los Angeles Lakers",".456","27.0","5.4","5.0","0.3",NA
+"45","","Gerald Wallace","SF","Charlotte Bobcats",".484","18.2","10.0","2.1","1.1",NA
+"46","","LeBron James","SF","Cleveland Cavaliers",".503","29.7","7.3","8.6","1.0",NA
+"47","","Dwight Howard","C","Orlando Magic",".612","18.3","13.2","1.8","2.8",NA
+"48","","Rajon Rondo","PG","Boston Celtics",".508","13.7","4.4","9.8","0.1",NA
+"49","2009","Kobe Bryant","SF","Los Angeles Lakers",".467","26.8","5.2","4.9","0.5",NA
+"50","","Kevin Garnett","PF","Boston Celtics",".531","15.8","8.5","2.5","1.2",NA
+"51","","LeBron James","SF","Cleveland Cavaliers",".489","28.4","7.6","7.2","1.1",NA
+"52","","Dwight Howard","C","Orlando Magic",".572","20.6","13.8","1.4","2.9",NA
+"53","","Chris Paul","PG","New Orleans Hornets",".503","22.8","5.5","11.0","0.1",NA
+"54","2008","Bruce Bowen","SF","San Antonio Spurs",".407","6.0","2.9","1.1","0.3",NA
+"55","","Kobe Bryant","SF","Los Angeles Lakers",".459","28.3","6.3","5.4","0.5",NA
+"56","","Marcus Camby","C","Denver Nuggets",".450","9.1","13.1","3.3","3.6",NA
+"57","","Tim Duncan","C","San Antonio Spurs",".497","19.3","11.3","2.8","1.9",NA
+"58","","Kevin Garnett","PF","Boston Celtics",".539","18.8","9.2","3.4","1.3",NA
+"59","2007","Raja Bell","SG","Phoenix Suns",".432","14.7","3.2","2.5","0.3",NA
+"60","","Bruce Bowen","SF","San Antonio Spurs",".405","6.2","2.7","1.4","0.3",NA
+"61","","Kobe Bryant","SF","Los Angeles Lakers",".463","31.6","5.7","5.4","0.5",NA
+"62","","Marcus Camby","C","Denver Nuggets",".473","11.2","11.7","3.2","3.3",NA
+"63","","Tim Duncan","C","San Antonio Spurs",".546","20.0","10.6","3.4","2.4",NA
+"64","2006","Metta World Peace","SF","Sacramento Kings",".404","17.6","5.1","3.6","0.7",NA
+"65","","Bruce Bowen","SF","San Antonio Spurs",".433","7.5","3.9","1.5","0.4",NA
+"66","","Kobe Bryant","SF","Los Angeles Lakers",".450","35.4","5.3","4.5","0.4",NA
+"67","","Jason Kidd","PG","New Jersey Nets",".404","13.3","7.3","8.4","0.4",NA
+"68","","Andrei Kirilenko","SF","Utah Jazz",".460","15.3","8.0","4.3","3.2",NA
+"69","","Ben Wallace","PF","Detroit Pistons",".510","7.3","11.3","1.9","2.2",NA
+"70","2005","Bruce Bowen","SF","San Antonio Spurs",".420","8.2","3.5","1.5","0.5",NA
+"71","","Tim Duncan","C","San Antonio Spurs",".496","20.3","11.1","2.7","2.6",NA
+"72","","Kevin Garnett","PF","Minnesota Timberwolves",".502","22.2","13.5","5.7","1.4",NA
+"73","","Larry Hughes","SG","Washington Wizards",".430","22.0","6.3","4.7","0.3",NA
+"74","","Ben Wallace","PF","Detroit Pistons",".453","9.7","12.2","1.7","2.4",NA
+"75","2004","Metta World Peace","SF","Indiana Pacers",".421","18.3","5.3","3.7","0.7",NA
+"76","","Bruce Bowen","SF","San Antonio Spurs",".420","6.9","3.1","1.4","0.4",NA
+"77","","Kobe Bryant","SF","Los Angeles Lakers",".438","24.0","5.5","5.1","0.4",NA
+"78","","Kevin Garnett","PF","Minnesota Timberwolves",".499","24.2","13.9","5.0","2.2",NA
+"79","","Ben Wallace","PF","Detroit Pistons",".421","9.5","12.4","1.7","3.0",NA
+"80","2003","Kobe Bryant","SF","Los Angeles Lakers",".451","30.0","6.9","5.9","0.8",NA
+"81","","Doug Christie","SG","Sacramento Kings",".479","9.4","4.3","4.7","0.5",NA
+"82","","Tim Duncan","C","San Antonio Spurs",".513","23.3","12.9","3.9","2.9",NA
+"83","","Kevin Garnett","PF","Minnesota Timberwolves",".502","23.0","13.4","6.0","1.6",NA
+"84","","Ben Wallace","PF","Detroit Pistons",".481","6.9","15.4","1.6","3.2",NA
+"85","2002","Tim Duncan","C","San Antonio Spurs",".508","25.5","12.7","3.7","2.5",NA
+"86","","Kevin Garnett","PF","Minnesota Timberwolves",".470","21.2","12.1","5.2","1.6",NA
+"87","","Jason Kidd","PG","New Jersey Nets",".391","14.7","7.3","9.9","0.2",NA
+"88","","Gary Payton","PG","Seattle SuperSonics",".467","22.1","4.8","9.0","0.3",NA
+"89","","Ben Wallace","PF","Detroit Pistons",".531","7.6","13.0","1.4","3.5",NA
+"90","2001","Tim Duncan","C","San Antonio Spurs",".499","22.2","12.2","3.0","2.3",NA
+"91","","Kevin Garnett","PF","Minnesota Timberwolves",".477","22.0","11.4","5.0","1.8",NA
+"92","","Jason Kidd","PG","Phoenix Suns",".411","16.9","6.4","9.8","0.3",NA
+"93","","Dikembe Mutombo","C","Philadelphia 76ers",".484","10.0","13.5","1.0","2.7",NA
+"94","","Gary Payton","PG","Seattle SuperSonics",".456","23.1","4.6","8.1","0.3",NA
+"95","2000","Kobe Bryant","SF","Los Angeles Lakers",".468","22.5","6.3","4.9","0.9",NA
+"96","","Tim Duncan","C","San Antonio Spurs",".490","23.2","12.4","3.2","2.2",NA
+"97","","Kevin Garnett","PF","Minnesota Timberwolves",".497","22.9","11.8","5.0","1.6",NA
+"98","","Alonzo Mourning","C","Miami Heat",".551","21.7","9.5","1.6","3.7",NA
+"99","","Gary Payton","PG","Seattle SuperSonics",".448","24.2","6.5","8.9","0.2",NA
+"100","1999","Tim Duncan","C","San Antonio Spurs",".495","21.7","11.4","2.4","2.5",NA
+"101","","Jason Kidd","PG","Phoenix Suns",".444","16.9","6.8","10.8","0.4",NA
+"102","","Karl Malone","PF","Utah Jazz",".493","23.8","9.4","4.1","0.6",NA
+"103","","Alonzo Mourning","C","Miami Heat",".511","20.1","11.0","1.6","3.9",NA
+"104","","Gary Payton","PG","Seattle SuperSonics",".434","21.7","4.9","8.7","0.2",NA
+"105","","Scottie Pippen","SF","Houston Rockets",".432","14.5","6.5","5.9","0.7",NA
+"106","1998","Karl Malone","PF","Utah Jazz",".530","27.0","10.3","3.9","0.9",NA
+"107","","Dikembe Mutombo","C","Atlanta Hawks",".537","13.4","11.4","1.0","3.4",NA
+"108","","Gary Payton","PG","Seattle SuperSonics",".453","19.2","4.6","8.3","0.2",NA
+"109","","Scottie Pippen","SF","Chicago Bulls",".447","19.1","5.2","5.8","1.0",NA
+"110","","Michael Jordan","G","Chicago Bulls",".465","28.7","5.8","3.5","0.5",NA
+"111","1997","Karl Malone","PF","Utah Jazz",".550","27.4","9.9","4.5","0.6",NA
+"112","","Dikembe Mutombo","C","Atlanta Hawks",".527","13.3","11.6","1.4","3.3",NA
+"113","","Gary Payton","PG","Seattle SuperSonics",".476","21.8","4.6","7.1","0.2",NA
+"114","","Scottie Pippen","SF","Chicago Bulls",".474","20.2","6.5","5.7","0.5",NA
+"115","","Michael Jordan","G","Chicago Bulls",".486","29.6","5.9","4.3","0.5",NA
+"116","1996","Gary Payton","PG","Seattle SuperSonics",".484","19.3","4.2","7.5","0.2",NA
+"117","","Scottie Pippen","SF","Chicago Bulls",".463","19.4","6.4","5.9","0.7",NA
+"118","","David Robinson","C","San Antonio Spurs",".516","25.0","12.2","3.0","3.3",NA
+"119","","Dennis Rodman","F","Chicago Bulls",".480","5.5","14.9","2.5","0.4",NA
+"120","","Michael Jordan","G","Chicago Bulls",".495","30.4","6.6","4.3","0.5",NA
+"121","1995","Mookie Blaylock","G","Atlanta Hawks",".425","17.2","4.9","7.7","0.3",NA
+"122","","Gary Payton","PG","Seattle SuperSonics",".509","20.6","3.4","7.1","0.2",NA
+"123","","Scottie Pippen","SF","Chicago Bulls",".480","21.4","8.1","5.2","1.1",NA
+"124","","David Robinson","C","San Antonio Spurs",".530","27.6","10.8","2.9","3.2",NA
+"125","","Dennis Rodman","F","San Antonio Spurs",".571","7.1","16.8","2.0","0.5",NA
+"126","1994","Mookie Blaylock","G","Atlanta Hawks",".411","13.8","5.2","9.7","0.5",NA
+"127","","Charles Oakley","PF","New York Knicks",".478","11.8","11.8","2.7","0.2",NA
+"128","","Hakeem Olajuwon","C","Houston Rockets",".528","27.3","11.9","3.6","3.7",NA
+"129","","Gary Payton","PG","Seattle SuperSonics",".504","16.5","3.3","6.0","0.2",NA
+"130","","Scottie Pippen","SF","Chicago Bulls",".491","22.0","8.7","5.6","0.8",NA
+"131","1993","Hakeem Olajuwon","C","Houston Rockets",".529","26.1","13.0","3.5","4.2",NA
+"132","","Scottie Pippen","SF","Chicago Bulls",".473","18.6","7.7","6.3","0.9",NA
+"133","","Dennis Rodman","F","Detroit Pistons",".427","7.5","18.3","1.6","0.7",NA
+"134","","Michael Jordan","G","Chicago Bulls",".495","32.6","6.7","5.5","0.8",NA
+"135","","Joe Dumars","G","Detroit Pistons",".466","23.5","1.9","4.0","0.1",NA
+"136","1992","Scottie Pippen","SF","Chicago Bulls",".506","21.0","7.7","7.0","1.1",NA
+"137","","David Robinson","C","San Antonio Spurs",".551","23.2","12.2","2.7","4.5",NA
+"138","","Dennis Rodman","F","Detroit Pistons",".539","9.8","18.7","2.3","0.9",NA
+"139","","Michael Jordan","G","Chicago Bulls",".519","30.1","6.4","6.1","0.9",NA
+"140","","Joe Dumars","G","Detroit Pistons",".448","19.9","2.3","4.6","0.1",NA
+"141","1991","David Robinson","C","San Antonio Spurs",".552","25.6","13.0","2.5","3.9",NA
+"142","","Dennis Rodman","F","Detroit Pistons",".493","8.2","12.5","1.0","0.7",NA
+"143","","Michael Jordan","G","Chicago Bulls",".539","31.5","6.0","5.5","1.0",NA
+"144","","Buck Williams","F","Portland Trail Blazers",".602","11.7","9.4","1.2","0.6",NA
+"145","","Alvin Robertson","G","Milwaukee Bucks",".485","13.6","5.7","5.5","0.2",NA
+"146","1990","Hakeem Olajuwon","C","Houston Rockets",".501","24.3","14.0","2.9","4.6",NA
+"147","","Dennis Rodman","F","Detroit Pistons",".581","8.8","9.7","0.9","0.7",NA
+"148","","Michael Jordan","G","Chicago Bulls",".526","33.6","6.9","6.3","0.7",NA
+"149","","Buck Williams","F","Portland Trail Blazers",".548","13.6","9.8","1.4","0.5",NA
+"150","","Joe Dumars","G","Detroit Pistons",".480","17.8","2.8","4.9","0.0",NA
+"151","1989","Dennis Rodman","F","Detroit Pistons",".595","9.0","9.4","1.2","0.9",NA
+"152","","Michael Jordan","G","Chicago Bulls",".538","32.5","8.0","8.0","0.8",NA
+"153","","Joe Dumars","G","Detroit Pistons",".505","17.2","2.5","5.7","0.1",NA
+"154","","Mark Eaton","C","Utah Jazz",".462","6.2","10.3","1.0","3.8",NA
+"155","","Larry Nance","F","Cleveland Cavaliers",".539","17.2","8.0","2.2","2.8",NA
+"156","1988","Hakeem Olajuwon","C","Houston Rockets",".514","22.8","12.1","2.1","2.7",NA
+"157","","Michael Jordan","G","Chicago Bulls",".535","35.0","5.5","5.9","1.6",NA
+"158","","Kevin McHale","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"159","","Michael Cooper","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"160","","Rodney McCray","","Houston Rockets","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"161","1987","Hakeem Olajuwon","C","Houston Rockets",".508","23.4","11.4","2.9","3.4",NA
+"162","","Alvin Robertson","G","San Antonio Spurs",".466","17.7","5.2","5.2","0.4",NA
+"163","","Kevin McHale","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"164","","Michael Cooper","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"165","","Dennis Johnson","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"166","1986","Mark Eaton","C","Utah Jazz",".470","8.5","8.4","1.3","4.6",NA
+"167","","Kevin McHale","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"168","","Maurice Cheeks","","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"169","","Sidney Moncrief","G","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"170","","Paul Pressey","","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"171","1985","Mark Eaton","C","Utah Jazz",".449","9.7","11.3","1.5","5.6",NA
+"172","","Maurice Cheeks","","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"173","","Michael Cooper","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"174","","Sidney Moncrief","G","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"175","","Paul Pressey","","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"176","1984","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"177","","Tree Rollins","C","Atlanta Hawks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"178","","Maurice Cheeks","","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"179","","Michael Cooper","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"180","","Sidney Moncrief","G","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"181","1983","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"182","","Moses Malone","C","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"183","","Maurice Cheeks","","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"184","","Dennis Johnson","","Phoenix Suns","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"185","","Sidney Moncrief","G","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"186","","Danny Roundfield","","Atlanta Hawks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"187","1982","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"188","","Michael Cooper","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"189","","Dennis Johnson","","Phoenix Suns","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"190","","Caldwell Jones","","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"191","","Danny Roundfield","","Atlanta Hawks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"192","1981","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"193","","Kareem Abdul-Jabbar","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"194","","Dennis Johnson","","Phoenix Suns","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"195","","Caldwell Jones","","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"196","","Micheal Richardson","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"197","1980","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"198","","Kareem Abdul-Jabbar","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"199","","Donald Buse","","Phoenix Suns","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"200","","Dennis Johnson","","Seattle SuperSonics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"201","","Micheal Richardson","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"202","","Danny Roundfield","","Atlanta Hawks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"203","1979","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"204","","Kareem Abdul-Jabbar","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"205","","Donald Buse","","Phoenix Suns","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"206","","Bob Dandridge","GF","Washington Bullets","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"207","","Dennis Johnson","","Seattle SuperSonics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"208","1978","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"209","","Bill Walton","","Portland Trail Blazers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"210","","Donald Buse","","Phoenix Suns","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"211","","Lionel Hollins","","Portland Trail Blazers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"212","","Maurice Lucas","","Portland Trail Blazers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"213","1977","Bobby Jones","SF","Philadelphia 76ers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"214","","Bill Walton","","Portland Trail Blazers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"215","","Donald Buse","","Indiana Pacers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"216","","E. Coleman","","Golden State Warriors","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"217","","Norman Van Lier","","Chicago Bulls","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"218","1976","John Havlicek","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"219","","David Cowens","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"220","","Paul Silas","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"221","","Norman Van Lier","","Chicago Bulls","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"222","","Stanley Washington","","Seattle SuperSonics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"223","1975","John Havlicek","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"224","","Walter Frazier","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"225","","Kareem Abdul-Jabbar","","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"226","","Paul Silas","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"227","","Jerry Sloan","","Chicago Bulls","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"228","1974","John Havlicek","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"229","","David DeBusschere","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"230","","Walter Frazier","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"231","","Kareem Abdul-Jabbar","","Milwaukee Bucks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"232","","Jerry Sloan","","Chicago Bulls","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"233","","Norman Van Lier","","Chicago Bulls","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"234","1973","John Havlicek","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"235","","David DeBusschere","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"236","","Walter Frazier","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"237","","Wilt Chamberlain","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"238","","Jerry West","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"239","1972","John Havlicek","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"240","","David DeBusschere","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"241","","Walter Frazier","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"242","","Wilt Chamberlain","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"243","","Jerry West","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"244","","Jerry Sloan","","Chicago Bulls","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"245","1971","David DeBusschere","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"246","","Walter Frazier","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"247","","Nathaniel Thurmond","","San Francisco Warriors","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"248","","Jerry West","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"249","","Gus Johnson","FC","Baltimore Bullets","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"250","1970","David DeBusschere","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"251","","Walter Frazier","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"252","","Willis Reed","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"253","","Jerry West","","Los Angeles Lakers","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"254","","Gus Johnson","FC","Baltimore Bullets","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"255","1969","David DeBusschere","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"256","","Walter Frazier","","New York Knicks","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"257","","Nathaniel Thurmond","","San Francisco Warriors","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"258","","Bill Russell","","Boston Celtics","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"259","","Jerry Sloan","","Chicago Bulls","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA

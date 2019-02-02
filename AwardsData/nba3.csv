@@ -1,0 +1,153 @@
+"","X1","X2","X3","X4","X5","X6","X7","X8","X9","X10"
+"1","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team","All-NBA 3rd Team"
+"2","YEAR","PLAYER","POS","TEAM","FG%","PPG","RPG","APG","BLKPG",NA
+"3","2018","Stephen Curry","G","Golden State Warriors",".495","26.4","5.1","6.1","0.2",NA
+"4","","Paul George","F","Oklahoma City Thunder",".430","21.9","5.7","3.3","0.5",NA
+"5","","Jimmy Butler","G","Minnesota Timberwolves",".474","22.2","5.3","4.9","0.4",NA
+"6","","Victor Oladipo","G","Indiana Pacers",".477","23.1","5.2","4.3","0.8",NA
+"7","","Karl-Anthony Towns","F","Minnesota Timberwolves",".545","21.3","12.3","2.4","1.4",NA
+"8","2017","DeAndre Jordan","C","LA Clippers",".714","12.7","13.8","1.2","1.7",NA
+"9","","DeMar DeRozan","G","Toronto Raptors",".467","27.3","5.2","3.9","0.2",NA
+"10","","John Wall","G","Washington Wizards",".451","23.1","4.2","10.7","0.6",NA
+"11","","Jimmy Butler","G","Chicago Bulls",".455","23.9","6.2","5.5","0.4",NA
+"12","","Draymond Green","F","Golden State Warriors",".418","10.2","7.9","7.0","1.4",NA
+"13","2016","LaMarcus Aldridge","F","San Antonio Spurs",".513","18.0","8.5","1.5","1.1",NA
+"14","","Kyle Lowry","G","Toronto Raptors",".427","21.2","4.7","6.4","0.4",NA
+"15","","Paul George","F","Indiana Pacers",".418","23.1","7.0","4.1","0.4",NA
+"16","","Klay Thompson","G","Golden State Warriors",".470","22.1","3.8","2.1","0.6",NA
+"17","","Andre Drummond","C","Detroit Pistons",".521","16.2","14.8","0.8","1.4",NA
+"18","2015","Tim Duncan","F","San Antonio Spurs",".512","13.9","9.1","3.0","2.0",NA
+"19","","DeAndre Jordan","C","LA Clippers",".710","11.5","15.0","0.7","2.2",NA
+"20","","Blake Griffin","F","LA Clippers",".502","21.9","7.6","5.3","0.5",NA
+"21","","Kyrie Irving","G","Cleveland Cavaliers",".468","21.7","3.2","5.2","0.3",NA
+"22","","Klay Thompson","G","Golden State Warriors",".463","21.7","3.2","2.9","0.8",NA
+"23","2014","Al Jefferson","C","Charlotte Bobcats",".509","21.8","10.8","2.1","1.1",NA
+"24","","LaMarcus Aldridge","F","Portland Trail Blazers",".458","23.2","11.1","2.6","1.0",NA
+"25","","Goran Dragic","G","Phoenix Suns",".505","20.3","3.2","5.9","0.3",NA
+"26","","Paul George","F","Indiana Pacers",".424","21.7","6.8","3.5","0.3",NA
+"27","","Damian Lillard","G","Portland Trail Blazers",".424","20.7","3.5","5.6","0.3",NA
+"28","2013","Dwyane Wade","G","Miami Heat",".521","21.2","5.0","5.1","0.8",NA
+"29","","Dwight Howard","C","Los Angeles Lakers",".578","17.1","12.4","1.4","2.4",NA
+"30","","David Lee","F","Golden State Warriors",".519","18.5","11.2","3.5","0.3",NA
+"31","","James Harden","G","Houston Rockets",".438","25.9","4.9","5.8","0.5",NA
+"32","","Paul George","G","Indiana Pacers",".419","17.4","7.6","4.1","0.6",NA
+"33","2012","Dirk Nowitzki","F","Dallas Mavericks",".457","21.6","6.8","2.2","0.5",NA
+"34","","Tyson Chandler","C","New York Knicks",".679","11.3","9.9","0.9","1.4",NA
+"35","","Carmelo Anthony","F","New York Knicks",".430","22.6","6.3","3.6","0.4",NA
+"36","","Dwyane Wade","G","Miami Heat",".497","22.1","4.8","4.6","1.3",NA
+"37","","Rajon Rondo","G","Boston Celtics",".448","11.9","4.8","11.7","0.1",NA
+"38","2011","Manu Ginobili","G","San Antonio Spurs",".433","17.4","3.7","4.9","0.4",NA
+"39","","Zach Randolph","PF","Memphis Grizzlies",".503","20.1","12.2","2.2","0.3",NA
+"40","","Chris Paul","PG","New Orleans Hornets",".463","15.9","4.1","9.8","0.1",NA
+"41","","LaMarcus Aldridge","PF","Portland Trail Blazers",".500","21.8","8.8","2.1","1.2",NA
+"42","","Al Horford","C","Atlanta Hawks",".557","15.3","9.3","3.5","1.0",NA
+"43","2010","Tim Duncan","F","San Antonio Spurs",".518","17.9","10.1","3.2","1.5",NA
+"44","","Pau Gasol","F","Los Angeles Lakers",".536","18.3","11.3","3.4","1.7",NA
+"45","","Joe Johnson","G","Atlanta Hawks",".458","21.3","4.6","4.9","0.1",NA
+"46","","Andrew Bogut","C","Milwaukee Bucks",".520","15.9","10.2","1.8","2.5",NA
+"47","","Brandon Roy","G","Portland Trail Blazers",".473","21.5","4.4","4.7","0.2",NA
+"48","2009","Chauncey Billups","G","Denver Nuggets",".418","17.7","3.0","6.4","0.2",NA
+"49","","Shaquille O'Neal","C","Phoenix Suns",".609","17.8","8.4","1.7","1.4",NA
+"50","","Pau Gasol","F","Los Angeles Lakers",".567","18.9","9.6","3.5","1.0",NA
+"51","","Tony Parker","G","San Antonio Spurs",".506","22.0","3.1","6.9","0.1",NA
+"52","","Carmelo Anthony","F","Denver Nuggets",".443","22.8","6.8","3.4","0.4",NA
+"53","2008","Manu Ginobili","G","San Antonio Spurs",".460","19.5","4.8","4.5","0.4",NA
+"54","","Tracy McGrady","G","Houston Rockets",".419","21.6","5.1","5.9","0.5",NA
+"55","","Paul Pierce","F","Boston Celtics",".464","19.6","5.1","4.5","0.5",NA
+"56","","Carlos Boozer","F","Utah Jazz",".547","21.1","10.4","2.9","0.5",NA
+"57","","Yao Ming","C","Houston Rockets",".507","22.0","10.8","2.3","2.0",NA
+"58","2007","Chauncey Billups","G","Detroit Pistons",".427","17.0","3.4","7.2","0.2",NA
+"59","","Kevin Garnett","F","Minnesota Timberwolves",".476","22.4","12.8","4.1","1.7",NA
+"60","","Carmelo Anthony","F","Denver Nuggets",".476","28.9","6.0","3.8","0.4",NA
+"61","","Dwyane Wade","G","Miami Heat",".491","27.4","4.7","7.5","1.2",NA
+"62","","Dwight Howard","C","Orlando Magic",".603","17.6","12.3","1.9","1.9",NA
+"63","2006","Allen Iverson","G","Philadelphia 76ers",".447","33.0","3.2","7.4","0.1",NA
+"64","","Shawn Marion","F","Phoenix Suns",".525","21.8","11.8","1.8","1.7",NA
+"65","","Gilbert Arenas","G","Washington Wizards",".447","29.3","3.5","6.1","0.3",NA
+"66","","Yao Ming","C","Houston Rockets",".519","22.3","10.2","1.5","1.6",NA
+"67","","Carmelo Anthony","F","Denver Nuggets",".481","26.5","4.9","2.7","0.5",NA
+"68","2005","Kobe Bryant","G","Los Angeles Lakers",".433","27.6","5.9","6.0","0.8",NA
+"69","","Shawn Marion","F","Phoenix Suns",".476","19.4","11.3","1.9","1.5",NA
+"70","","Tracy McGrady","F","Houston Rockets",".431","25.7","6.2","5.7","0.7",NA
+"71","","Ben Wallace","C","Detroit Pistons",".453","9.7","12.2","1.7","2.4",NA
+"72","","Gilbert Arenas","G","Washington Wizards",".431","25.5","4.7","5.1","0.3",NA
+"73","2004","Metta World Peace","F","Indiana Pacers",".421","18.3","5.3","3.7","0.7",NA
+"74","","Baron Davis","F","New Orleans Hornets",".395","22.9","4.3","7.5","0.4",NA
+"75","","Dirk Nowitzki","F","Dallas Mavericks",".462","21.8","8.7","2.7","1.4",NA
+"76","","Michael Redd","G","Milwaukee Bucks",".440","21.7","5.0","2.3","0.1",NA
+"77","","Yao Ming","C","Houston Rockets",".522","17.5","9.0","1.5","1.9",NA
+"78","2003","Stephon Marbury","G","Phoenix Suns",".439","22.3","3.2","8.1","0.2",NA
+"79","","Jamal Mashburn","F","New Orleans Hornets",".422","21.6","6.1","5.6","0.2",NA
+"80","","Steve Nash","G","Dallas Mavericks",".465","17.7","2.9","7.3","0.1",NA
+"81","","Jermaine O'Neal","C","Indiana Pacers",".484","20.8","10.3","2.0","2.3",NA
+"82","","Paul Pierce","F","Boston Celtics",".416","25.9","7.3","4.4","0.8",NA
+"83","2002","Dikembe Mutombo","C","Atlanta Hawks",".501","11.5","10.8","1.0","2.4",NA
+"84","","Steve Nash","G","Dallas Mavericks",".483","17.9","3.1","7.7","0.0",NA
+"85","","Jermaine O'Neal","F","Indiana Pacers",".479","19.0","10.5","1.6","2.3",NA
+"86","","Paul Pierce","G","Boston Celtics",".442","26.1","6.9","3.2","1.0",NA
+"87","","Ben Wallace","F","Detroit Pistons",".531","7.6","13.0","1.4","3.5",NA
+"88","2001","Ray Allen","G","Milwaukee Bucks",".480","22.0","5.2","4.6","0.2",NA
+"89","","Karl Malone","F","Utah Jazz",".498","23.2","8.3","4.5","0.8",NA
+"90","","Dirk Nowitzki","F","Dallas Mavericks",".474","21.8","9.2","2.1","1.2",NA
+"91","","Gary Payton","G","Seattle SuperSonics",".456","23.1","4.6","8.1","0.3",NA
+"92","","David Robinson","C","San Antonio Spurs",".486","14.4","8.6","1.5","2.5",NA
+"93","2000","Vince Carter","F","Toronto Raptors",".465","25.7","5.8","3.9","1.1",NA
+"94","","Eddie Jones","G","Charlotte Hornets",".427","20.1","4.8","4.2","0.7",NA
+"95","","Stephon Marbury","G","New Jersey Nets",".432","22.2","3.2","8.4","0.2",NA
+"96","","David Robinson","C","San Antonio Spurs",".512","17.8","9.6","1.8","2.3",NA
+"97","","Chris Webber","F","Sacramento Kings",".483","24.5","10.5","4.6","1.7",NA
+"98","1999","Kobe Bryant","G","Los Angeles Lakers",".465","19.9","5.3","3.8","1.0",NA
+"99","","Kevin Garnett","F","Minnesota Timberwolves",".460","20.8","10.4","4.3","1.8",NA
+"100","","Antonio McDyess","F","Denver Nuggets",".471","21.2","10.7","1.6","2.3",NA
+"101","","Hakeem Olajuwon","C","Houston Rockets",".514","18.9","9.6","1.8","2.5",NA
+"102","","John Stockton","G","Utah Jazz",".488","11.1","2.9","7.5","0.3",NA
+"103","1998","Reggie Miller","G","Indiana Pacers",".477","19.5","2.9","2.1","0.1",NA
+"104","","Dikembe Mutombo","C","Atlanta Hawks",".537","13.4","11.4","1.0","3.4",NA
+"105","","Scottie Pippen","F","Chicago Bulls",".447","19.1","5.2","5.8","1.0",NA
+"106","","Glen Rice","F","Charlotte Hornets",".457","22.3","4.3","2.2","0.3",NA
+"107","","Mitch Richmond","G","Sacramento Kings",".445","23.2","3.3","4.0","0.2",NA
+"108","1997","Vin Baker","F","Milwaukee Bucks",".505","21.0","10.3","2.7","1.4",NA
+"109","","Anfernee Hardaway","G","Orlando Magic",".447","20.5","4.5","5.6","0.6",NA
+"110","","Anthony Mason","F","Charlotte Hornets",".525","16.2","11.4","5.7","0.5",NA
+"111","","Shaquille O'Neal","C","Los Angeles Lakers",".557","26.2","12.5","3.1","2.9",NA
+"112","","John Stockton","G","Utah Jazz",".548","14.4","2.8","10.5","0.2",NA
+"113","1996","Charles Barkley","F","Phoenix Suns",".500","23.2","11.6","3.7","0.8",NA
+"114","","Juwan Howard","F","Washington Bullets",".489","22.1","8.1","4.4","0.5",NA
+"115","","Reggie Miller","G","Indiana Pacers",".473","21.1","2.8","3.3","0.2",NA
+"116","","Shaquille O'Neal","C","Orlando Magic",".573","26.6","11.0","2.9","2.1",NA
+"117","","Mitch Richmond","G","Sacramento Kings",".447","23.1","3.3","3.1","0.2",NA
+"118","1995","Reggie Miller","G","Indiana Pacers",".462","19.6","2.6","3.0","0.2",NA
+"119","","Hakeem Olajuwon","C","Houston Rockets",".517","27.8","10.8","3.5","3.4",NA
+"120","","Dennis Rodman","F","San Antonio Spurs",".571","7.1","16.8","2.0","0.5",NA
+"121","","Detlef Schrempf","F","Seattle SuperSonics",".523","19.2","6.2","3.8","0.4",NA
+"122","","Clyde Drexler","G","Houston Rockets",".461","21.8","6.3","4.8","0.6",NA
+"123","1994","Derrick Coleman","F","New Jersey Nets",".447","20.2","11.3","3.4","1.8",NA
+"124","","Shaquille O'Neal","C","Orlando Magic",".599","29.3","13.2","2.4","2.9",NA
+"125","","Gary Payton","G","Seattle SuperSonics",".504","16.5","3.3","6.0","0.2",NA
+"126","","Dominique Wilkins","F","Los Angeles Clippers",".440","26.0","6.5","2.3","0.4",NA
+"127","","Mark Price","G","Cleveland Cavaliers",".478","17.3","3.0","7.8","0.1",NA
+"128","1993","Derrick Coleman","F","New Jersey Nets",".460","20.7","11.2","3.6","1.7",NA
+"129","","Tim Hardaway","G","Golden State Warriors",".447","21.5","4.0","10.6","0.2",NA
+"130","","Scottie Pippen","F","Chicago Bulls",".473","18.6","7.7","6.3","0.9",NA
+"131","","David Robinson","C","San Antonio Spurs",".501","23.4","11.7","3.7","3.2",NA
+"132","","Drazen Petrovic","G","New Jersey Nets","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"133","1992","Kevin Johnson","G","Phoenix Suns",".479","19.7","3.7","10.7","0.3",NA
+"134","","Dennis Rodman","F","Detroit Pistons",".539","9.8","18.7","2.3","0.9",NA
+"135","","Kevin Willis","F","Atlanta Hawks",".483","18.3","15.5","2.1","0.7",NA
+"136","","Brad Daugherty","C","Cleveland Cavaliers",".570","21.5","10.4","3.6","1.1",NA
+"137","","Mark Price","G","Cleveland Cavaliers",".488","17.3","2.4","7.4","0.2",NA
+"138","1991","Hakeem Olajuwon","C","Houston Rockets",".508","21.2","13.8","2.3","3.9",NA
+"139","","John Stockton","G","Utah Jazz",".507","17.2","2.9","14.2","0.2",NA
+"140","","James Worthy","F","Los Angeles Lakers",".492","21.4","4.6","3.5","0.4",NA
+"141","","Joe Dumars","G","Detroit Pistons",".481","20.4","2.3","5.5","0.1",NA
+"142","","Bernard King","F","Washington Bullets","No stats available.","No stats available.","No stats available.","No stats available.","No stats available.",NA
+"143","1990","Chris Mullin","F","Golden State Warriors",".536","25.1","5.9","4.1","0.6",NA
+"144","","David Robinson","C","San Antonio Spurs",".531","24.3","12.0","2.0","3.9",NA
+"145","","James Worthy","F","Los Angeles Lakers",".548","21.1","6.0","3.6","0.6",NA
+"146","","Clyde Drexler","G","Portland Trail Blazers",".494","23.3","6.9","5.9","0.7",NA
+"147","","Joe Dumars","G","Detroit Pistons",".480","17.8","2.8","4.9","0.0",NA
+"148","1989","Terry Cummings","F","Milwaukee Bucks",".467","22.9","8.1","2.5","0.9",NA
+"149","","Dale Ellis","G","Seattle SuperSonics",".501","27.5","4.2","2.0","0.3",NA
+"150","","Dominique Wilkins","F","Atlanta Hawks",".464","26.2","6.9","2.6","0.7",NA
+"151","","Robert Parish","C","Boston Celtics",".570","18.6","12.5","2.2","1.5",NA
+"152","","Mark Price","G","Cleveland Cavaliers",".526","18.9","3.0","8.4","0.1",NA
