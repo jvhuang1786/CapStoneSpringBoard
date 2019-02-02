@@ -1,0 +1,231 @@
+---
+title: "Multiple_linear_regression"
+author: "Justin Huang"
+date: "2/2/2019"
+output: 
+  html_document:
+    keep_md: yes
+  pdf_document: default
+---
+
+###Library's Used
+
+```{r echo = FALSE, message=FALSE}
+library(dplyr)
+library(car)
+library(ggplot2)
+library(lmtest)
+library(sandwich)
+library(caret)
+```
+
+###Loading in the data
+
+```{r echo = FALSE}
+data<-read.csv("2000_2018_nba.csv")
+```
+
+###Splitting up the Test and Training data.  Used 2000-2014 data to make the training set and will test it on the 2015-2018 seasons.
+
+```{r echo= FALSE}
+nbaTrain<- data %>% subset(PlayerYear == 2000|PlayerYear == 2001|PlayerYear == 2002|PlayerYear == 2003|
+                  PlayerYear == 2004|PlayerYear == 2005|PlayerYear == 2006|PlayerYear == 2007|
+                  PlayerYear == 2008|PlayerYear == 2009 |PlayerYear == 2010 | PlayerYear == 2011|
+                    PlayerYear == 2012| PlayerYear == 2013 | PlayerYear == 2014, select =c(PlayerYear, team, name, salary,
+                                                                   height_cm, weight_lb, school,
+                                                                   country,DraftYear, DraftRound,
+                                                                   DraftNum, PlusMinus, Pos, Age,
+                                                                   Games, started, MinGames,
+                                                                   FG, FG_att, three, three_att,
+                                                                   two, two_att, FT, FT_att,
+                                                                   o_reb, d_reb, t_reb, assist,
+                                                                   steal, block, TO, fouls, ppg,
+                                                                   infl, mvp,mip,SixthMan,dpoy,
+                                                                   roy, nba1, nba2, nba3, rook1, rook2,
+                                                                   def1,def2, FG_per, two_per, EFG,
+                                                                   three_per, FT_per, TeamWins, NumYears,
+                                                                   tmsalary, SalCap, overUnder))
+nbaTest <- data %>% subset(PlayerYear == 2015|PlayerYear == 2016| PlayerYear == 2017 | PlayerYear == 2018, 
+                           select =c(PlayerYear:overUnder))
+```
+
+###First model going to put in age, total rebounds, points per game, games played, minutes per game, number of years and two point shots.  
+
+```{r echo = FALSE}
+nbaMacModel1<- lm(salary~Age + t_reb + ppg + FG +Games + MinGames +NumYears +two, data=nbaTrain)
+nbaMacModel1
+summary(nbaMacModel1)
+```
+
+Two pointers seemed insignficant so will remove that variable.  
+
+```{r echo = FALSE}
+# remove insignficant variable two
+
+nbaMacModel2 <- lm(salary~Age + t_reb + FG + ppg + Games + MinGames +NumYears, data=nbaTrain)
+summary(nbaMacModel2)
+
+#Adjusted R squared went from 0.5349 to 0.5349 no difference
+
+SSE = sum(nbaMacModel2$residuals^2)
+SSE
+RMSE = sqrt(SSE/nrow(nbaTrain))
+RMSE
+mean(nbaTrain$salary)
+```
+
+All the variables are significant.  The adjusted R squared remained at 0.5349.  The Root mean squared error is way too high 2947038 with a mean salary of 4195077.  
+
+Lets test for one of the assumptions of multicollinearity 
+
+```{r echo = FALSE}
+#Looking for multicollinearity
+myvars = c("Age","t_reb", "FG", "ppg", "Games", "MinGames", "NumYears")
+dfTrain<-nbaTrain[myvars]
+#dfTrain
+
+round(cor(dfTrain),2)
+
+#scatterplot
+plot(dfTrain)
+```
+
+Going to use Variance inflation factor from cars factor to test for multicollinearity.  VIF is calculated as 1/tolerance where tolearnce is an indication of the percent variance in the predictor that cannot be accounted for by the other predictors. It assesses the relationship between each independednt variable and all the other variables.
+
+Looking VIF scores should be close to 1 but under 5.  Over 10 means variable is not needed and can be removed from the model.
+
+```{r echo = FALSE}
+vif(nbaMacModel2)
+
+#FG is 56 lets remove that first 
+
+nbaMacModel3 <- lm(salary~Age + t_reb +Games + ppg + NumYears + MinGames, data=nbaTrain)
+summary(nbaMacModel3)
+```
+
+Removed FG that had a VIF of 56
+
+```{r echo = FALSE}
+vif(nbaMacModel3) 
+
+#remove Minutes per game 
+
+nbaMacModel4 <- lm(salary~Age + t_reb +Games + ppg + NumYears, data=nbaTrain)
+summary(nbaMacModel4)
+
+vif(nbaMacModel4)
+```
+
+Removed minutes per game as it had a vif of 7.4 and finally all VIF is under 5 now.  
+
+Now lets see if the residuals are normally distributed 
+
+```{r echo = FALSE}
+hist(resid(nbaMacModel4), main ="Histogram of Residuals", xlab = "Standardized Residuals", ylab = "Frequency")
+```
+
+Residuals look relatively normally distributed 
+
+###Testing for heterscedasticiy.  
+
+```{r echo = FALSE}
+par(mfrow = c(2,2))
+plot(nbaMacModel4)
+bptest(nbaMacModel4)
+```
+
+We can see the spread of the residuals is increasing going along the x values the spread is not constant.  
+Doing a further test with the Breusch Pagan Test, involves using a variance function and using a chi squared test to test Ho for not present Homoscedastic and Ha has heteroschedasticity, we find that we have hetereoscedasticity. 
+
+###Resolving Heteroscedasticity
+
+2 main consequences
+  1. Ordinary Least Squares no longer produces best estimators
+  2. Standard Errors computed using Least squares can be incorrect and misleading
+
+###Regression with Robust Standard Errors 
+
+Accepting that OLS no longer produces best linear unbiased estimators.  
+
+
+```{r echo = FALSE}
+nbaTrain.ols <- lm(salary~Age + t_reb +Games + ppg + NumYears, data=nbaTrain)
+nbaTrain$resi <- nbaTrain.ols$residuals
+summary(nbaTrain.ols)
+```
+
+The standard errors for b1 is 262677 the intercept and for Age is 8820, t_reb 19534, games 2081, ppg 8999 and NumYears is 10881, to compare them with robust standard errors we use the sandwich package 
+
+```{r echo = FALSE}
+coeftest(nbaTrain.ols, vcov = vcovHC(nbaTrain.ols,"HC1")) #HC1 gives us the white standard errors 
+```
+
+There is a drastic difference in standard errors.   From the intercept to Age 271984 to 10162.  The huge difference may be due to the small sample size.  Doest address second issue of heteroscedasticity which is least square estimateors are no longer the best.
+
+###General Least Squares is a technique to estimate unknown parameters in linear regression when there is a certain degree of correlation between residuals in a regression model.  
+
+```{r echo =FALSE}
+nbaTrain.ols <- lm(salary~Age + t_reb + TO +Games + ppg + NumYears, data=nbaTrain) 
+nbaTrain$resi<- nbaTrain.ols$residuals
+varfunc.ols <- lm(log(resi^2) ~log(Age) + log(t_reb) + log(Games) + log(ppg) +log(NumYears), data = nbaTrain)
+summary(varfunc.ols)
+nbaTrain$varfunc <- exp(varfunc.ols$fitted.values)
+nbaTrain.gls <- lm(salary~ Age + t_reb + TO +Games + ppg + NumYears, weights = 1/sqrt(varfunc), data = nbaTrain)
+summary(nbaTrain.ols)
+summary(nbaTrain.gls)
+```
+
+Ccomparing ordinary least sqaures and general least squares, gls r squared of 0.5069 and ols r squared of 0.5308, which makes ols better because of lower variances which results in a higher r squared.
+
+```{r echo = FALSE}
+plot(nbaTrain.gls)
+plot(nbaTrain.ols)
+```
+
+If we look at the residuals vs the fitted it still has the problem of Heterescedasticity in both of the models. 
+
+###Box-cox transformation of variable to make it approximatly to a normal distribution. Will transform the salary variable(y variable)
+
+```{r echo = FALSE}
+salaryBCMod <- BoxCoxTrans(nbaTrain$salary)
+salaryBCMod
+nbaTrain <- cbind(nbaTrain, sal_new = predict(salaryBCMod, nbaTrain$salary)) # append transformed variables to salary
+#head(nbaTrain)
+
+nbaMacModel5 <- lm(sal_new~Age + t_reb + Games + ppg + NumYears, data=nbaTrain) 
+summary(nbaMacModel5)
+plot(nbaMacModel5)
+SSE1 <- sum(nbaMacModel5$residuals^2)
+#SSE1
+RMSE1 <- sqrt(SSE1/nrow(nbaTrain))
+RMSE1
+mean(nbaTrain$sal_new)
+
+```
+
+The variation of observations around the regression line(the residual SE) in residuals vs fited look constant (homoscedasticity). Looking at the RMSE it is really low 0.79 compared to the mean of 14.7.
+
+All assumptions are met now for a linear model 
+
+    1.Y values are independent
+    2.Y values can be expressed as a linear function of the X variable 
+    3.Variation of observations around the regression line(the residual SE) is constant (homoscedasticity)
+    4.For given value of X, Y values (or the error) are Normally distributed
+
+###Testing the Box-Cox tranformation model to see how well it does with our test data. 
+
+```{r echo = FALSE}
+salaryPrediction <- predict(nbaMacModel5, newdata = nbaTest)
+salaryBCModT <- BoxCoxTrans(nbaTest$salary)
+salaryBCModT
+nbaTest <- cbind(nbaTest, sal_new = predict(salaryBCModT, nbaTest$salary)) 
+SSETest <- sum((salaryPrediction - nbaTest$sal_new)^2)
+SSTTest <- sum((mean(nbaTrain$sal_new) - nbaTest$sal_new)^2)
+R2 = 1 - SSETest/SSTTest
+R2
+
+RMSEtest = sqrt(SSETest/nrow(nbaTest))
+RMSEtest
+```
+
+RMSE increased by a lot 0.79 to 85.24 and the R squared was much lower originally it was 0.5171 now it's 0.000929.  The training data does not do a good job of explaining the test data.  It would not be good to use newer data to predict older data.  However, the newer data seems to be on a whole new salary scale due to a major increase in basketball related income due to the tv deal which saw it increase from 930 mil to 2.6 billion.  And we can see this trend in our scatter plots where there is a huge increase in salary from 2015.   To be able to more accurately predict salary using statistics we would need to collect the 6 years of data going forward for the 2017 CBA.  Up till the 2023 CBA.  However, you would have a low number of observations of only 2700 observations. 
