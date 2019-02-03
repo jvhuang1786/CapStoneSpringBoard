@@ -4,6 +4,7 @@ library(ggplot2)
 library(lmtest)
 library(sandwich)
 library(caret)
+library(rattle)
 
 data<-read.csv("2000_2018_nba.csv")
 
@@ -117,6 +118,61 @@ coeftest(nbaTrain.ols, vcov = vcovHC(nbaTrain.ols,"HC1")) #HC1 gives us the whit
 #dealing with Heteroskedasticity
 #Box-cox transformation of variable to make it approximae to a normal distribution. Will try to do transformation for
 #y variable 
+
+
+# Address Outliers and see if any are influential 
+std.res <- rstudent(nbaMacModel4)
+outliers <- std.res[which(std.res>=3)]
+hats <- hatvalues(nbaMacModel4)
+leverage<-(length(nbaMacModel4$coefficients)+1/length(nbaTrain$salary))
+lvg_points <- hats[which(hats>= leverage)]
+lvg_points[which(names(lvg_points) %in% names(outliers))]
+
+#no influential outlier points  
+boxCox(nbaMacModel4, lambda = seq(-1,1,.05))
+
+nbaMacModel4Trans <- lm(salary ^(.20)~Age + t_reb +Games + ppg + NumYears, data=nbaTrain)
+summary(nbaMacModel4Trans);extractAIC(nbaMacModel4Trans)[2]
+par(mfrow=c(2,2))
+plot(nbaMacModel4Trans)
+
+std.res<-rstudent(nbaMacModel4Trans)
+hist(std.res, freq=FALSE,
+     main = "Distribution of Studentized Residuals")
+xfit<- seq(min(std.res),max(std.res),length =50)
+yfit<-dnorm(xfit)
+lines(xfit,yfit,col='red')
+
+nbaTest2 <-nbaTest
+nbaTest2$salary<- (nbaTest2$salary) ^ (0.2)
+
+salarypred <- predict(nbaMacModel4Trans, nbaTest2)
+
+rmsenew <- sqrt(mean((nbaTest2$salary) ^(1/0.2)- (salarypred)^(1/0.2))^2) 
+rmsenew 
+
+
+SSEnew <- sum((salarypred - nbaTest2$salary)^2)
+SSTnew <- sum((mean(nbaTrain$salary)^(0.2) - nbaTest2$salary)^2)
+R2new = 1 - SSEnew/SSTnew
+R2new
+rmseold <- sqrt(mean((nbaTest$salary) - (salarypred))^2) 
+rmseold
+
+#decision Tree
+modTree <- train(salary~Age + t_reb +Games + ppg + NumYears, method="rpart2", maxdepth = 10, data = nbaTrain)
+fancyRpartPlot(modTree$finalModel)
+predTree <- predict(modTree$finalModel, nbaTest)
+rmseTree <- sqrt(mean((nbaTest$salary) - (predTree))^2) 
+rmseTree
+SSETree <- sum((predTree - nbaTest$salary)^2)
+SSTTree <- sum((mean(nbaTrain$salary) - nbaTest$salary)^2)
+R2Tree = 1 - SSETree/SSTTree
+R2Tree
+#Random Forest
+modRF <-train(salary~Age + t_reb +Games + ppg + NumYears, method = "rf", data = nbaTrain)
+predrf<-predict(modRF$finalModel, nbaTest)
+
 
 salaryBCMod <- BoxCoxTrans(nbaTrain$salary)
 salaryBCMod

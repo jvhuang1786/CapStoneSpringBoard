@@ -461,3 +461,92 @@ All assumptions are met now for a linear model
 ```
 
 RMSE increased by a lot 0.79 to 85.24 and the R squared was much lower originally it was 0.5171 now it's 0.000929.  The training data does not do a good job of explaining the test data.  It would not be good to use newer data to predict older data.  However, the newer data seems to be on a whole new salary scale due to a major increase in basketball related income due to the tv deal which saw it increase from 930 mil to 2.6 billion.  And we can see this trend in our scatter plots where there is a huge increase in salary from 2015.   To be able to more accurately predict salary using statistics we would need to collect the 6 years of data going forward for the 2017 CBA.  Up till the 2023 CBA.  However, you would have a low number of observations of only 2700 observations. 
+
+Lets see if we can try using another model or reapplying our box cox transformation
+
+###BoxCox Redo 
+
+Lets see if there were any outliers perhaps that might have influenced the model above.  
+
+
+```
+## named numeric(0)
+```
+
+There doesn't seem to be an inlfuential outliers affecting our nbaMacmodel4.
+
+
+Lets redo our box cox transformation model
+
+![](nba_ML_mult_line_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
+
+It shows approximately we should use a lambda of 0.2.  
+
+
+```
+## 
+## Call:
+## lm(formula = salary^(0.2) ~ Age + t_reb + Games + ppg + NumYears, 
+##     data = nbaTrain)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -12.2817  -1.8732   0.0329   1.9742  11.2124 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 4.914164   0.250658  19.605   <2e-16 ***
+## Age         0.331697   0.008417  39.409   <2e-16 ***
+## t_reb       0.344405   0.018640  18.477   <2e-16 ***
+## Games       0.000609   0.001986   0.307    0.759    
+## ppg         0.279825   0.008587  32.588   <2e-16 ***
+## NumYears    0.209825   0.010383  20.209   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.855 on 6155 degrees of freedom
+## Multiple R-squared:   0.55,	Adjusted R-squared:  0.5496 
+## F-statistic:  1504 on 5 and 6155 DF,  p-value: < 2.2e-16
+```
+
+```
+## [1] 12933.74
+```
+
+![](nba_ML_mult_line_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+
+Transforming it again shows that we get rid of the heteroscedasticity. Lets see if our errors are normally distributed.
+
+![](nba_ML_mult_line_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+
+
+Time to apply the newly transformed model. 
+
+
+```
+## [1] 2425442
+```
+
+```
+## [1] 0.4437364
+```
+
+```
+## [1] 5637064
+```
+
+We can see with the new model the R squared is 0.444 which was much better than the original box cox transformation.  The RMSE also went down from 5637064 from the old model to 2425442 for the box cox transformation model.  
+
+Lets try a decision tree model to see if our RMSE can go down or our R squared can increase. 
+
+![](nba_ML_mult_line_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+
+```
+## [1] 1655600
+```
+
+```
+## [1] 0.3450517
+```
+
+R squared got worst and fell to 0.345 that means on 35 percent of our indepedent variables explain salary.  However, the RMSE decreased to 1655600.  It will be interesting to evaluate this again when the NBA plays 5 more seasons under the new CBA contract with the new terms under basketball related income.  

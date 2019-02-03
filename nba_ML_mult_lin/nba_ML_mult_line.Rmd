@@ -17,12 +17,15 @@ library(ggplot2)
 library(lmtest)
 library(sandwich)
 library(caret)
+library(rattle)
 ```
 
 ###Loading in the data
 
 ```{r echo = FALSE}
+setwd("/users/justinvhuang/desktop/nba_stat_salaries")
 data<-read.csv("2000_2018_nba.csv")
+data<- data[,-1]
 ```
 
 ###Splitting up the Test and Training data.  Used 2000-2014 data to make the training set and will test it on the 2015-2018 seasons.
@@ -229,3 +232,86 @@ RMSEtest
 ```
 
 RMSE increased by a lot 0.79 to 85.24 and the R squared was much lower originally it was 0.5171 now it's 0.000929.  The training data does not do a good job of explaining the test data.  It would not be good to use newer data to predict older data.  However, the newer data seems to be on a whole new salary scale due to a major increase in basketball related income due to the tv deal which saw it increase from 930 mil to 2.6 billion.  And we can see this trend in our scatter plots where there is a huge increase in salary from 2015.   To be able to more accurately predict salary using statistics we would need to collect the 6 years of data going forward for the 2017 CBA.  Up till the 2023 CBA.  However, you would have a low number of observations of only 2700 observations. 
+
+Lets see if we can try using another model or reapplying our box cox transformation
+
+###BoxCox Redo 
+
+Lets see if there were any outliers perhaps that might have influenced the model above.  
+
+```{r echo = FALSE}
+std.res <- rstudent(nbaMacModel4)
+outliers <- std.res[which(std.res>=3)]
+hats <- hatvalues(nbaMacModel4)
+leverage<-(length(nbaMacModel4$coefficients)+1/length(nbaTrain$salary))
+lvg_points <- hats[which(hats>= leverage)]
+lvg_points[which(names(lvg_points) %in% names(outliers))]
+```
+
+There doesn't seem to be an inlfuential outliers affecting our nbaMacmodel4.
+
+
+Lets redo our box cox transformation model
+
+```{r echo = FALSE}
+boxCox(nbaMacModel4, lambda = seq(-1,1,.05))
+```
+
+It shows approximately we should use a lambda of 0.2.  
+
+```{r echo = FALSE}
+nbaMacModel4Trans <- lm(salary ^(.20)~Age + t_reb +Games + ppg + NumYears, data=nbaTrain)
+summary(nbaMacModel4Trans);extractAIC(nbaMacModel4Trans)[2]
+par(mfrow=c(2,2))
+plot(nbaMacModel4Trans)
+```
+
+Transforming it again shows that we get rid of the heteroscedasticity. Lets see if our errors are normally distributed.
+
+```{r echo = FALSE}
+std.res<-rstudent(nbaMacModel4Trans)
+hist(std.res, freq=FALSE,
+     main = "Distribution of Studentized Residuals")
+xfit<- seq(min(std.res),max(std.res),length =50)
+yfit<-dnorm(xfit)
+lines(xfit,yfit,col='red')
+```
+
+
+Time to apply the newly transformed model. 
+
+```{r echo = FALSE}
+nbaTest2 <-nbaTest
+nbaTest2$salary<- (nbaTest2$salary) ^ (0.2)
+
+salarypred <- predict(nbaMacModel4Trans, nbaTest2)
+
+rmsenew <- sqrt(mean((nbaTest2$salary) ^(1/0.2)- (salarypred)^(1/0.2))^2) 
+rmsenew 
+
+
+SSEnew <- sum((salarypred - nbaTest2$salary)^2)
+SSTnew <- sum((mean(nbaTrain$salary)^(0.2) - nbaTest2$salary)^2)
+R2new = 1 - SSEnew/SSTnew
+R2new
+rmseold <- sqrt(mean((nbaTest$salary) - (salarypred))^2) 
+rmseold
+```
+
+We can see with the new model the R squared is 0.444 which was much better than the original box cox transformation.  The RMSE also went down from 5637064 from the old model to 2425442 for the box cox transformation model.  
+
+Lets try a decision tree model to see if our RMSE can go down or our R squared can increase. 
+
+```{r echo = FALSE}
+modTree <- train(salary~Age + t_reb +Games + ppg + NumYears, method="rpart2", maxdepth = 10, data = nbaTrain)
+fancyRpartPlot(modTree$finalModel)
+predTree <- predict(modTree$finalModel, nbaTest)
+rmseTree <- sqrt(mean((nbaTest$salary) - (predTree))^2) 
+rmseTree
+SSETree <- sum((predTree - nbaTest$salary)^2)
+SSTTree <- sum((mean(nbaTrain$salary) - nbaTest$salary)^2)
+R2Tree = 1 - SSETree/SSTTree
+R2Tree
+```
+
+R squared got worst and fell to 0.345 that means on 35 percent of our indepedent variables explain salary.  However, the RMSE decreased to 1655600.  It will be interesting to evaluate this again when the NBA plays 5 more seasons under the new CBA contract with the new terms under basketball related income.  
