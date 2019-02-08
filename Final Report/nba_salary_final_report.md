@@ -514,6 +514,10 @@ To make sure the multiple linear regression was valid I tested it for multicolli
 ## 1.016150 1.581476 1.388780 1.905876 1.442247
 ```
 
+```
+## [1] 2990696
+```
+
 A variance inflation factor test was run.  Variance inflation is calculated as 1/tolerance where tolerance is the percent of variance in the predictor that cannot be accounted for by other predictors.   We wanted to have a VIF score to be close to 1 but under 5.  However, we did not want a VIF over 10 which means this variable was not needed and could be removed from the model.
 
 Field goals had a VIF score of 55.8. Field goals was removed, and I remade the model again with field goals removed and ran the VIF test again. I then removed minutes per game which had a VIF score of 7.4.  We then arrived at a model where all the VIF scores were below 5 and close to 1.  
@@ -555,7 +559,11 @@ I chose a lamba of 0.2 to transform salary when looking at this chart.
 ## F-statistic:  1504 on 5 and 6155 DF,  p-value: < 0.00000000000000022
 ```
 
-For the second box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model.  The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
+```
+## [1] 12933.74
+```
+
+For the second box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model. From 2990696 to 12933.74. The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
 
 ![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-2.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-3.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-4.png)<!-- -->
 
@@ -576,7 +584,7 @@ I then ran the model through the test data which contained data from the 2015-20
 ##        Decision Tree Box Cox Transformation
 ## rmse 1655599.7125872        2425442.3667801
 ## R2         0.3450517              0.4437364
-## mean 5637083.2768299             20.2572947
+## mean 5637083.2768299        5637083.2768299
 ```
 
 Both of these models both indicate that the original model using the training data set from the years 2000-2014 did a worst job of predicting salary for the 2015-2018 season.  Both the R squared for the decision tree (0.345) and box cox transformation model (0.44) fell compared to the original models, using the training data, that had R squares of 0.53(non transformed) and 0.55(Box cox transformed).  Hence, there are other factors outside are explanatory variables that may be better predictors of salary.  Some of these predictors I believe is outside of the realm of our data.  

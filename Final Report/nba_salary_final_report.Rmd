@@ -1825,6 +1825,10 @@ nbaMacModel4 <- lm(salary~Age + t_reb +Games + ppg + NumYears, data=nbaTrain)
 summary(nbaMacModel4)
 
 vif(nbaMacModel4)
+SSE <- sum(nbaMacModel4$residuals^2)
+#SSE
+RMSE <- sqrt(SSE/nrow(nbaTrain))
+RMSE
 ```
 
 A variance inflation factor test was run.  Variance inflation is calculated as 1/tolerance where tolerance is the percent of variance in the predictor that cannot be accounted for by other predictors.   We wanted to have a VIF score to be close to 1 but under 5.  However, we did not want a VIF over 10 which means this variable was not needed and could be removed from the model.
@@ -1845,10 +1849,10 @@ I chose a lamba of 0.2 to transform salary when looking at this chart.
 
 ```{r echo = FALSE}
 nbaMacModel4Trans <- lm(salary ^(.20)~Age + t_reb +Games + ppg + NumYears, data=nbaTrain)
-summary(nbaMacModel4Trans)
+summary(nbaMacModel4Trans);extractAIC(nbaMacModel4Trans)[2]
 ```
 
-For the second box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model.  The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
+For the second box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model. From 2990696 to 12933.74. The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
 
 ```{r echo = FALSE}
 plot(nbaMacModel4Trans)
@@ -1880,9 +1884,11 @@ rmseBC <- sqrt(mean((nbaTest2$salary) ^(1/0.2)- (salarypred)^(1/0.2))^2)
 SSEnew <- sum((salarypred - nbaTest2$salary)^2)
 SSTnew <- sum((mean(nbaTrain$salary)^(0.2) - nbaTest2$salary)^2)
 R2BC <- 1 - SSEnew/SSTnew
-meanBC<- mean(nbaTest2$salary)
+meanBC<- mean(nbaTest$salary)
 #R2new
-rmseold <- sqrt(mean((nbaTest$salary) - (salarypred))^2) 
+rmseold <- sqrt(mean((nbaTest$salary) - (salarypred))^2)
+R2old<- 0.5496
+meanold<-mean(nbaTest$salary)
 #rmseold
 ```
 
@@ -1910,7 +1916,6 @@ dfmodelBC<-data.frame()
 dfmodelBC<- cbind(rbind(rmseBC,R2BC,meanBC))
 colnames(dfmodelBC)[1] <- "Box Cox Transformation"
 cbind(dfmodeltree,dfmodelBC)
-
 ```
 
 Both of these models both indicate that the original model using the training data set from the years 2000-2014 did a worst job of predicting salary for the 2015-2018 season.  Both the R squared for the decision tree (0.345) and box cox transformation model (0.44) fell compared to the original models, using the training data, that had R squares of 0.53(non transformed) and 0.55(Box cox transformed).  Hence, there are other factors outside are explanatory variables that may be better predictors of salary.  Some of these predictors I believe is outside of the realm of our data.  
