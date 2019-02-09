@@ -1852,13 +1852,13 @@ nbaMacModel4Trans <- lm(salary ^(.20)~Age + t_reb +Games + ppg + NumYears, data=
 summary(nbaMacModel4Trans);extractAIC(nbaMacModel4Trans)[2]
 ```
 
-For the second box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model. From 2990696 to 12933.74. The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
+For the box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model. From 2990696 to 12933.74. The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
 
 ```{r echo = FALSE}
 plot(nbaMacModel4Trans)
 ```
 
-Transforming it again shows that we get rid of the heteroscedasticity. Then I double checked to see if the errors were normally distributed. 
+Transforming it again shows that we get rid of the heteroscedasticity. If we look at the first plot.  As X increases the errors don't increase but stay relatively constant. Then I double checked to see if the errors were normally distributed again. 
 
 ```{r echo = FALSE}
 std.res<-rstudent(nbaMacModel4Trans)
@@ -1877,14 +1877,14 @@ nbaTest2$salary<- (nbaTest2$salary) ^ (0.2)
 
 salarypred <- predict(nbaMacModel4Trans, nbaTest2)
 
-rmseBC <- sqrt(mean((nbaTest2$salary) ^(1/0.2)- (salarypred)^(1/0.2))^2) 
+rmse <- sqrt(mean((nbaTest2$salary) ^(1/0.2)- (salarypred)^(1/0.2))^2) 
 #rmsenew 
 
 
 SSEnew <- sum((salarypred - nbaTest2$salary)^2)
 SSTnew <- sum((mean(nbaTrain$salary)^(0.2) - nbaTest2$salary)^2)
-R2BC <- 1 - SSEnew/SSTnew
-meanBC<- mean(nbaTest$salary)
+R2 <- 1 - SSEnew/SSTnew
+mean<- mean(nbaTest$salary)
 #R2new
 rmseold <- sqrt(mean((nbaTest$salary) - (salarypred))^2)
 R2old<- 0.5496
@@ -1892,33 +1892,16 @@ meanold<-mean(nbaTest$salary)
 #rmseold
 ```
 
-*Decision Tree*
 
 ```{r echo = FALSE}
-modTree <- train(salary~Age + t_reb +Games + ppg + NumYears, method="rpart2", maxdepth = 10, data = nbaTrain)
-fancyRpartPlot(modTree$finalModel)
-predTree <- predict(modTree$finalModel, nbaTest)
-rmse <- sqrt(mean((nbaTest$salary) - (predTree))^2) 
-#rmseTree
-SSETree <- sum((predTree - nbaTest$salary)^2)
-SSTTree <- sum((mean(nbaTrain$salary) - nbaTest$salary)^2)
-R2 <- 1 - SSETree/SSTTree
-mean<-mean(nbaTest$salary)
-#R2Tree
-```
-
-```{r echo = FALSE}
-dfmodeltree<- data.frame()
-dfmodeltree<- cbind(rbind(rmse,R2,mean))
-colnames(dfmodeltree)[1] <- "Decision Tree"
 
 dfmodelBC<-data.frame()
-dfmodelBC<- cbind(rbind(rmseBC,R2BC,meanBC))
+dfmodelBC<- cbind(rbind(rmse,R2,mean))
 colnames(dfmodelBC)[1] <- "Box Cox Transformation"
-cbind(dfmodeltree,dfmodelBC)
+dfmodelBC
 ```
 
-Both of these models both indicate that the original model using the training data set from the years 2000-2014 did a worst job of predicting salary for the 2015-2018 season.  Both the R squared for the decision tree (0.345) and box cox transformation model (0.44) fell compared to the original models, using the training data, that had R squares of 0.53(non transformed) and 0.55(Box cox transformed).  Hence, there are other factors outside are explanatory variables that may be better predictors of salary.  Some of these predictors I believe is outside of the realm of our data.  
+The model indicates that using the training set(2000-2014) to predict the test set(2015-2018) got worst. The R squared for the box cox transformation model (0.44) fell compared to the original models, that had R squares of 0.53(non transformed) and 0.55(Box cox transformed).  Hence, there are other factors outside are explanatory variables that may be better predictors of salary.  Some of these predictors I believe is outside of the realm of our data.  
 
 One of the biggest factors could be the calculation of basketball related income.  The BRI linked not only to the American networks but also international networks.  Another factor to look at is the social media model that is collecting revenue outside traditional media.  Other factors that could determine player and team negotiations is the players chemistry with the coach, general manager, his community and also his social media influence.  
 

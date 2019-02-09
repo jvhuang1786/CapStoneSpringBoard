@@ -563,11 +563,11 @@ I chose a lamba of 0.2 to transform salary when looking at this chart.
 ## [1] 12933.74
 ```
 
-For the second box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model. From 2990696 to 12933.74. The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
+For the box-cox transformation model the adjusted R-squared was 0.5496 which was an improvement over the original model.  The RMSE also decreased from the original model. From 2990696 to 12933.74. The residuals became constant indicating that the model no longer suffers from heteroscedasticity. 
 
 ![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-2.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-3.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-4.png)<!-- -->
 
-Transforming it again shows that we get rid of the heteroscedasticity. Then I double checked to see if the errors were normally distributed. 
+Transforming it again shows that we get rid of the heteroscedasticity. If we look at the first plot.  As X increases the errors don't increase but stay relatively constant. Then I double checked to see if the errors were normally distributed again. 
 
 ![](nba_salary_final_report_files/figure-html/unnamed-chunk-45-1.png)<!-- -->
 
@@ -575,19 +575,16 @@ I then ran the model through the test data which contained data from the 2015-20
 
 
 
-*Decision Tree*
-
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-47-1.png)<!-- -->
 
 
 ```
-##        Decision Tree Box Cox Transformation
-## rmse 1655599.7125872        2425442.3667801
-## R2         0.3450517              0.4437364
-## mean 5637083.2768299        5637083.2768299
+##      Box Cox Transformation
+## rmse        2425442.3667801
+## R2                0.4437364
+## mean        5637083.2768299
 ```
 
-Both of these models both indicate that the original model using the training data set from the years 2000-2014 did a worst job of predicting salary for the 2015-2018 season.  Both the R squared for the decision tree (0.345) and box cox transformation model (0.44) fell compared to the original models, using the training data, that had R squares of 0.53(non transformed) and 0.55(Box cox transformed).  Hence, there are other factors outside are explanatory variables that may be better predictors of salary.  Some of these predictors I believe is outside of the realm of our data.  
+The model indicates that using the training set(2000-2014) to predict the test set(2015-2018) got worst. The R squared for the box cox transformation model (0.44) fell compared to the original models, that had R squares of 0.53(non transformed) and 0.55(Box cox transformed).  Hence, there are other factors outside are explanatory variables that may be better predictors of salary.  Some of these predictors I believe is outside of the realm of our data.  
 
 One of the biggest factors could be the calculation of basketball related income.  The BRI linked not only to the American networks but also international networks.  Another factor to look at is the social media model that is collecting revenue outside traditional media.  Other factors that could determine player and team negotiations is the players chemistry with the coach, general manager, his community and also his social media influence.  
 
