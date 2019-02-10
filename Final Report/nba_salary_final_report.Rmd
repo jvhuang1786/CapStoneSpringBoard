@@ -201,7 +201,7 @@ ggplot(thr_lose, aes(PlayerYear, meanW)) +
 
 If we look at the graph, we see the average wins for players who can’t make more than three 3’s is around 40 games.  The dip in 2012 is due to the shortened lock out season.  
 
-After the 2015 season it showed players who made more than 3 three’s per game on average their teams won 55 games. While, teams who had players who made less than 3 three’s a game only won on average 40-42 games. Winning 40-42 games through the 2000-2018 season would normally only get you 8th seed in the east while you would be 9th or 10th seed in the west. Therefore, as a general manager you would want to keep a look out for these players who have the ability to make more than 3 three’s a game. Out of 7978 observations only 27 observations were able to do so. While only one observation Jason Richardson was the only player who did not make an All-NBA team. From a team’s perspective or an agent’s perspective then these players who have the ability to make more than 3 threes a game are valuable.
+After the 2015 season it showed players who made more than 3 three’s per game on average their teams won 55 games. While, teams who had players who made less than 3 three’s a game only won on average 40-42 games. Winning 40-42 games through the 2000-2018 season would normally only get you 8th seed in the east while you would be 9th or 10th seed in the west. Therefore, as a general manager you would want to keep a look out for these players who have the ability to make more than 3 three’s a game. Out of 7978 observations only 27 observations were able to do so. While only one observation Jason Richardson was the only player who did not make an All-NBA team or win an individual award. From a team’s perspective or an agent’s perspective then these players who have the ability to make more than 3 threes a game are valuable.
 
 ```{r echo = FALSE}
 morethan3<-data %>% filter(three >= 3)
@@ -226,6 +226,7 @@ morethan3 %>% ggplot(aes(PlayerYear,salary, color = ppg)) + geom_smooth() +
 ```
 
 Looking at the plot above in today’s NBA market a player who has the ability to make more than three 3’s a game could possibly command a salary above 20 million dollars a year. This type of contract is near close to the max and could vary depending on the number of years the player has played in the NBA.
+
 
 Benefit: 
 
@@ -546,6 +547,17 @@ tall2018 %>% arrange(desc(salary)) %>% head(n = 10) %>% select(name, salary, ppg
 
 Looking at the top 10 paid 7fters, the value comes from grabbing rebounds and protecting the rim. Looking at the list however, only 2 of these are traditional back to the basket big men. The rest are players who play the pick and roll or pick and pop. This is where they roll to the basket or shoot the 3-pointer or long mid-range 2-pointer. Looking at the salary amount these players are signed at 20-25 percent of the current salary cap which was 99 million dollars for the 2018 season. Depending on the market for numbers of buyers (teams with cap) and sellers (players seeking teams) these types of players could receive up to the max or the salary of a 2nd or 3rd option on a team.
 
+The unircorn or the modern day big man is a big that can space the floor, run up and down the court, grab rebounds and block.  College teams make it a priority to scout for these types of players.  If we run a filter and search for these types of players, by setting a filter for scoring more than 15 ppg, making 1 three a game, grabbing 7 rebounds or more, making 1 block, having a three point percentage of 0.35 which is 5 percent above the mean average of three pointer percentage in the league and finally a height above 208 cm, we find that we only get 14 observations out of the 7978.  
+
+```{r echo = FALSE}
+data %>% filter(three >= 1 & t_reb >= 7 & ppg >= 15 & block >=1 & height_cm >= 208 & three_per >= 0.35) %>% 
+  select(name, PlayerYear, t_reb, three, ppg, block, salary, Games) %>% head(n = 30)
+```
+
+Notable players like Anthony davis did not even make this filtered list.  Also, if we look at the list we can see that in reality only 7 players were able to make this filtered list.  One important thing to notice is the amount of games played.   Cousins, Joel Embiid both played less than 50 games while, Kristaps Porzingis only played 66 games.  In general players who are taller are more prone to injury when running up and down in a contact sport.  The problem with this once you commit to the max and if this player gets injured the salary still remains on the teams salary which can be ranging from 20-40 percent depending on the awards and number of years the player has played.  
+
+[7ft injury](https://tonic.vice.com/en_us/article/zmgd44/nba-tall-players-injury-basketball)- Article talking about tall players getting injured at todays pace of the game.  
+
 Benefits:
 
     Signing a modern day big that can spread the floor, shoot 3’s and grab rebounds is a modern day unicorn.  
@@ -616,7 +628,9 @@ colnames(dfInternational)[1] <- "Salary"
 dfInternational
 ```
 
-For a salary scale we see that the mean salary for foreign players is 5,002,830 with max being 25,000,000 per year.  The minimum salary for foreign players the past 19 seasons was 61775, this was probably a 10-day contract or a 2-way contract for a foreign player playing in the developmental league.
+For a salary scale we see that the mean salary for foreign players is 5,002,830 with max being 25,000,000 per year.  The minimum salary for foreign players the past 19 seasons was 61775, this was probably a 10-day contract or a 2-way contract for a foreign player playing in the developmental league. International players have the benefits of also playing in the professional league at a much earlier age.   
+
+  [Ricky Rubio](https://en.wikipedia.org/wiki/Ricky_Rubio) - Ricky Rubio age 15 at the Olympics.  
 
 Benefit:
 
@@ -1596,6 +1610,13 @@ alldef %>% ggplot(aes(t_reb, salary, color = steal, size = 3)) + geom_point()+
 ```
 
 For the all-defense team I chose to plot salary with total rebounds and steals.  Guards being able to easily get steals and big men being able to easily get rebounds.  Of course, since this is a media chosen award, there are other non-measurable statistics on defense.   For example, Bruce Bowen, Raja Bell, Avery Bradley and Shane Battier all considered good role players might not even grab a single rebound or make a single steal, but they are able to hold the opposing player to a lower shooting percentage.  Thus, the all-defensive team might comprise of only a few role players in the award listing.  
+
+```{r echo = FALSE}
+data %>% filter(def1 == "YES"|def2 =="YES") %>% filter(ppg <= 10 & steal <= 1 & t_reb <= 5) %>% 
+  select(name, PlayerYear, salary, ppg, block, t_reb, steal)
+```
+
+Looking at this list we can see that Bruce Bown is a prime example here as a defensive specialist but doesn't really fill up the box score and therefore, won't get much media attention besides winning an all defensive team award.  
 
 All-NBA players seem to receive a higher salary than All-Defense players. In NBA contracting through the agreements of the CBA there doesn’t seem to be a salary increase for players who make it to all defensive teams. If we look at the salary scale of an All-NBA player, we see that the mean salary is 14752955, max salary is 34682550, min salary is 2157595 and median salary is 14693906. Looking at the all-defensive team, the mean salary is 12274335, max salary is 28000000, min salary is 715850 and median salary is 12289544. All-NBA players are more recognized through the media and usually get voted in the yearly all-star games more often than players who are on the all-defensive team. It is important to note that most of these award voting is done not by the coaches and league players who actually play the game but the media people who cover and report interesting stories and headlines on the NBA.
 

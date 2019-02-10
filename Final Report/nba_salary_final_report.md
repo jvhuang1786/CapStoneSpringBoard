@@ -163,7 +163,7 @@ Looking at the table for less than three 3’s a game we can see that the mean i
 
 If we look at the graph, we see the average wins for players who can’t make more than three 3’s is around 40 games.  The dip in 2012 is due to the shortened lock out season.  
 
-After the 2015 season it showed players who made more than 3 three’s per game on average their teams won 55 games. While, teams who had players who made less than 3 three’s a game only won on average 40-42 games. Winning 40-42 games through the 2000-2018 season would normally only get you 8th seed in the east while you would be 9th or 10th seed in the west. Therefore, as a general manager you would want to keep a look out for these players who have the ability to make more than 3 three’s a game. Out of 7978 observations only 27 observations were able to do so. While only one observation Jason Richardson was the only player who did not make an All-NBA team. From a team’s perspective or an agent’s perspective then these players who have the ability to make more than 3 threes a game are valuable.
+After the 2015 season it showed players who made more than 3 three’s per game on average their teams won 55 games. While, teams who had players who made less than 3 three’s a game only won on average 40-42 games. Winning 40-42 games through the 2000-2018 season would normally only get you 8th seed in the east while you would be 9th or 10th seed in the west. Therefore, as a general manager you would want to keep a look out for these players who have the ability to make more than 3 three’s a game. Out of 7978 observations only 27 observations were able to do so. While only one observation Jason Richardson was the only player who did not make an All-NBA team or win an individual award. From a team’s perspective or an agent’s perspective then these players who have the ability to make more than 3 threes a game are valuable.
 
 
 ```
@@ -194,6 +194,7 @@ The average salary for the past 19 seasons is 14437429 which should be starting 
 ![](nba_salary_final_report_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
 
 Looking at the plot above in today’s NBA market a player who has the ability to make more than three 3’s a game could possibly command a salary above 20 million dollars a year. This type of contract is near close to the max and could vary depending on the number of years the player has played in the NBA.
+
 
 Benefit: 
 
@@ -284,6 +285,31 @@ Going off the 2018 contracts for 7fters, we see that the top 5 paid 7fters are A
 
 Looking at the top 10 paid 7fters, the value comes from grabbing rebounds and protecting the rim. Looking at the list however, only 2 of these are traditional back to the basket big men. The rest are players who play the pick and roll or pick and pop. This is where they roll to the basket or shoot the 3-pointer or long mid-range 2-pointer. Looking at the salary amount these players are signed at 20-25 percent of the current salary cap which was 99 million dollars for the 2018 season. Depending on the market for numbers of buyers (teams with cap) and sellers (players seeking teams) these types of players could receive up to the max or the salary of a 2nd or 3rd option on a team.
 
+The unircorn or the modern day big man is a big that can space the floor, run up and down the court, grab rebounds and block.  College teams make it a priority to scout for these types of players.  If we run a filter and search for these types of players, by setting a filter for scoring more than 15 ppg, making 1 three a game, grabbing 7 rebounds or more, making 1 block, having a three point percentage of 0.35 which is 5 percent above the mean average of three pointer percentage in the league and finally a height above 208 cm, we find that we only get 14 observations out of the 7978.  
+
+
+```
+##                  name PlayerYear t_reb three  ppg block   salary Games
+## 1       Dirk Nowitzki       2001   9.2   1.8 21.8   1.2  1693560    82
+## 2     Rasheed Wallace       2002   8.2   1.4 19.3   1.3 14400000    79
+## 3       Dirk Nowitzki       2002   9.9   1.8 23.4   1.0  2157595    76
+## 4       Dirk Nowitzki       2003   9.9   1.9 25.1   1.0 10067750    80
+## 5     Rasheed Wallace       2003   7.4   1.5 18.1   1.0 16200000    74
+## 6       Dirk Nowitzki       2005   9.7   1.2 26.1   1.5 12584688    78
+## 7       Dirk Nowitzki       2006   9.0   1.4 26.6   1.0 13843156    81
+## 8          Al Horford       2016   7.3   1.1 15.2   1.5 12000000    82
+## 9  Karl-Anthony Towns       2017  12.3   1.2 25.1   1.3  5960160    82
+## 10   DeMarcus Cousins       2017  11.0   1.8 27.0   1.3 15756438    72
+## 11 Kristaps Porzingis       2017   7.2   1.7 18.1   2.0  4317720    66
+## 12        Joel Embiid       2017   7.8   1.2 20.2   2.5  4826160    31
+## 13   DeMarcus Cousins       2018  12.9   2.2 25.2   1.6 18063850    48
+## 14 Karl-Anthony Towns       2018  12.3   1.5 21.3   1.4  6216840    82
+```
+
+Notable players like Anthony davis did not even make this filtered list.  Also, if we look at the list we can see that in reality only 7 players were able to make this filtered list.  One important thing to notice is the amount of games played.   Cousins, Joel Embiid both played less than 50 games while, Kristaps Porzingis only played 66 games.  In general players who are taller are more prone to injury when running up and down in a contact sport.  The problem with this once you commit to the max and if this player gets injured the salary still remains on the teams salary which can be ranging from 20-40 percent depending on the awards and number of years the player has played.  
+
+[7ft injury](https://tonic.vice.com/en_us/article/zmgd44/nba-tall-players-injury-basketball)- Article talking about tall players getting injured at todays pace of the game.  
+
 Benefits:
 
     Signing a modern day big that can spread the floor, shoot 3’s and grab rebounds is a modern day unicorn.  
@@ -309,7 +335,7 @@ Costs:
 
 With the increase of globalization of the NBA it is important to look at international prospects and players as there might be huge player market outside the United States.
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-24-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
 
 Overall salaries paid to international players increased year by year. If we split it by country to see where most of these players are coming from, we see that Spain and France represent most of the international population.
 
@@ -330,7 +356,7 @@ Overall salaries paid to international players increased year by year. If we spl
 ## 10 Russia               32 180585067
 ```
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
 
 France had the most prospects 102.  However, if you look at the salary it looks like Spain produced better prospects than France as the amount of money is quite similar, but Spain only had 68 observations from the 2000-2018 season.  
 
@@ -349,7 +375,9 @@ The main reason why many players from international leagues can’t make an easi
 ## stdev   4771831
 ```
 
-For a salary scale we see that the mean salary for foreign players is 5,002,830 with max being 25,000,000 per year.  The minimum salary for foreign players the past 19 seasons was 61775, this was probably a 10-day contract or a 2-way contract for a foreign player playing in the developmental league.
+For a salary scale we see that the mean salary for foreign players is 5,002,830 with max being 25,000,000 per year.  The minimum salary for foreign players the past 19 seasons was 61775, this was probably a 10-day contract or a 2-way contract for a foreign player playing in the developmental league. International players have the benefits of also playing in the professional league at a much earlier age.   
+
+  [Ricky Rubio](https://en.wikipedia.org/wiki/Ricky_Rubio) - Ricky Rubio age 15 at the Olympics.  
 
 Benefit:
 
@@ -368,7 +396,7 @@ Cost:
 
 **Analysis of the Best and Worst team salaries in the NBA**
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-27-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-27-2.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-28-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-28-2.png)<!-- -->
 
 The green line is the salary for winning teams while the red line is salary for losing teams.  For the past 19 seasons we can see that winning teams spend on average over the salary cap. While losing teams will tend to spend close to the salary cap. Teams who are unable to sign free agents they want, will still have to spend close to the cap according to stipulations in the CBA. If they do not spend close the salary cap for that year, they will have to spread the difference on a pro rata basis between all current players on the team’s roster. This has caused teams who have huge cap space to sign players to ridiculous 1-year contracts just to fill this salary cap space. Another affect this has caused is teams signing average players to contracts close to the max in fear of getting nothing in the free agent market or in the fear of losing their only somewhat productive player to another team. The Celtics avoided this trap by trading away Isaiah Thomas.
 
@@ -376,18 +404,18 @@ The green line is the salary for winning teams while the red line is salary for 
 
 Armed with this information we as a team or an agent can better advise players for what type of team, they would want to sign with be it a team that is tanking and filling in salary or a contending championship team. Below is the top paid player on the best and worst team through the 2000-2018 season.
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
 
 We can see that on average winning teams (teal bar) will spend more for their highest paid player than the losing team (red bar).
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-30-1.png)<!-- -->
 
 Looking at the average salary of a player through 19 seasons.  Winning teams (green line) on average spend more than losing teams (red line).  
 
 Now if we split the mark for teams with winning percentages (Teams that won more than 43 games) and teams with losing percentages (Teams that lost more than 42 games). We can see in the 2018 season that teams have spent close to 8 million on average per player while losing teams have spent just above 7 million dollars per player.  However, this average might be pulled up for winning teams due to them signing multiple stars which are only 1-3 players on a team to massive contracts and the rest are minimum paid players.  
 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-30-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-30-2.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-31-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-31-2.png)<!-- -->
 
 Below is a table for the benchmarks differences between winning teams and losing teams for the past 19 seasons. Again, we see more expenditure for teams with winning percentages than losing percentages.  The standard deviation is bigger for the winning team salaries which confirms that the spread of salary of winning teams is more skewed as they are probably signing 1-3 huge contracts with the rest of the 12 contracts on a team being near the minimum.  
 
@@ -456,7 +484,7 @@ The average salary increased over the years as well as the average player scorin
 
 *MVP and DPOY vs Avg Joe*
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-34-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-35-1.png)<!-- -->
 
 MVP salary of course is above the average joe salary. Winning the MVP award allows players to get the maximum contract. Other ways to obtain the max contract including making the All-NBA team consistently. This is in the CBA called the designated player exception.
 
@@ -465,7 +493,7 @@ The designated player exception: Applies to players that have 7 to 9 years of NB
 The requirements also are that the player must make two All-NBA teams or win defensive player of the year or MVP 3 years prior to signing the deal. We can see defensive player of the year salary is well above average Joe as well.
 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-35-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-36-1.png)<!-- -->
 
   [CBA](https://www.foxsports.com/nba/story/nba-6-important-aspects-of-the-new-collective-bargaining-agreement-122016) - Explaining the collective bargaining agreement and different contract rules.
 
@@ -485,13 +513,32 @@ We can see that MVPs make more money than players that win defensive player of t
 
 *All-NBA and All-Defensive teams*
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-37-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-38-1.png)<!-- -->
 
 For All-NBA teams I looked at salary plotted with ppg and assists.  The All-NBA team voting is widely evaluated by the media on a player’s offensive statistics and number wins.  Since, the removal of the center position in the voting ballots a lot of these awards go to forwards and guards now.  
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-38-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-39-1.png)<!-- -->
 
 For the all-defense team I chose to plot salary with total rebounds and steals.  Guards being able to easily get steals and big men being able to easily get rebounds.  Of course, since this is a media chosen award, there are other non-measurable statistics on defense.   For example, Bruce Bowen, Raja Bell, Avery Bradley and Shane Battier all considered good role players might not even grab a single rebound or make a single steal, but they are able to hold the opposing player to a lower shooting percentage.  Thus, the all-defensive team might comprise of only a few role players in the award listing.  
+
+
+```
+##             name PlayerYear   salary ppg block t_reb steal
+## 1    Bruce Bowen       2003  3550000 7.1   0.5   2.9   0.8
+## 2    Bruce Bowen       2004  3650000 6.9   0.4   3.1   1.0
+## 3    Bruce Bowen       2005  3000000 8.2   0.5   3.5   0.7
+## 4    Bruce Bowen       2006  3375000 7.5   0.4   3.9   1.0
+## 5    Bruce Bowen       2007  3750000 6.2   0.3   2.7   0.8
+## 6    Bruce Bowen       2008  4125000 6.0   0.3   2.9   0.7
+## 7  Shane Battier       2009  6448900 7.3   0.9   4.8   0.8
+## 8    Bruce Bowen       2009  4000000 2.7   0.2   1.8   0.5
+## 9  Shane Battier       2010  6864200 8.0   1.1   4.7   0.8
+## 10   Paul George       2015 15800000 8.8   0.2   3.7   0.8
+## 11   Danny Green       2018 10000000 8.6   1.1   3.6   0.9
+## 12    Tony Allen       2018  1471382 4.7   0.1   2.1   0.5
+```
+
+Looking at this list we can see that Bruce Bown is a prime example here as a defensive specialist but doesn't really fill up the box score and therefore, won't get much media attention besides winning an all defensive team award.  
 
 All-NBA players seem to receive a higher salary than All-Defense players. In NBA contracting through the agreements of the CBA there doesn’t seem to be a salary increase for players who make it to all defensive teams. If we look at the salary scale of an All-NBA player, we see that the mean salary is 14752955, max salary is 34682550, min salary is 2157595 and median salary is 14693906. Looking at the all-defensive team, the mean salary is 12274335, max salary is 28000000, min salary is 715850 and median salary is 12289544. All-NBA players are more recognized through the media and usually get voted in the yearly all-star games more often than players who are on the all-defensive team. It is important to note that most of these award voting is done not by the coaches and league players who actually play the game but the media people who cover and report interesting stories and headlines on the NBA.
 
@@ -518,7 +565,7 @@ Before the 2011 CBA the mid-level exception was tied to salary cap. It was the a
 
 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-41-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-43-1.png)<!-- -->
 
 Data online for players signed by the mid-level exception wasn’t available for the last 19 seasons. What I wanted to analyze with the mid-level exception was what players each year teams could potentially sign with the mid- level exception when they were near the salary cap. The mid-level exception line above was created by taking the mid-level exception each year and selecting players whose salaries were 25 percent lower or above this mid-level exception salary number. While, of course there could be players who will be willing to take a massive pay cut to play for certain teams, this isn’t something that normally would happen on average. (David West rejected 12.5 million dollars a year to accept the veteran’s minimum with the Spurs.)
 
@@ -572,7 +619,7 @@ I then wanted to test for multicollinearity, so I ran a correlation test to see 
 ## NumYears  0.08  0.41  0.51  0.51  0.38     0.54     1.00
 ```
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-46-1.png)<!-- -->
 
 If the correlations between two explanatory variables was above 0.8 there would be a high chance of multicollinearity in the model. Field goal and points per game had a correlation of 0.99, while minutes per game, field goals and points per game had a 0.9 correlation. But before just removing these variables from the model I used a variance of inflation factor test from the cars package.  
 
@@ -629,7 +676,7 @@ To check if the error terms were normally distributed, I ran a plot of the model
 
 To fix this I ran a Box Cox Transformation.  Where I chose a lamda of 0.2 based off the graph. 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-46-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-48-1.png)<!-- -->
 
 I chose a lamba of 0.2 to transform salary when looking at this chart.
 
@@ -668,11 +715,11 @@ For the box-cox transformation model the adjusted R-squared was 0.5496 which was
 
 Using plot() the new model shows that heteroscedasticity was fixed.  Our new R squared (0.5496) vs old (0.5287).  
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-48-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-48-2.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-48-3.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-48-4.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-2.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-3.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-4.png)<!-- -->
 
 If we look at the first plot. As X increases the errors don’t increase but stay relatively constant. Normal QQ shows the that it almost falls on the line, this tells us that our errors look normally distributed.  I double check this with a histogram below. 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-49-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-51-1.png)<!-- -->
 
 When running the model with the test data (2015-2018), the R squared got worst and dropped to 0.44, while the RMSE went up.   This was kind of expected due to the 2017 CBA and expansion of the television contracts leading up to this agreement.  
 
