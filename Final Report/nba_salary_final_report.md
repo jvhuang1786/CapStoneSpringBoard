@@ -430,6 +430,11 @@ Below is a table for the benchmarks differences between winning teams and losing
 ## stdev     5387179     4335375
 ```
 
+If we take a look at the 65-win 2018 Houston Rockets, we can see this type of salary spread where 1-3 players on the team are taking most of the team’s salary cap.  
+
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-33-1.png)<!-- -->
+
+
 Benefits:
 
     Signing with a losing team usually has more cap space and thus could sign a better deal for the player.  
@@ -484,7 +489,7 @@ The average salary increased over the years as well as the average player scorin
 
 *MVP and DPOY vs Avg Joe*
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-35-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-36-1.png)<!-- -->
 
 MVP salary of course is above the average joe salary. Winning the MVP award allows players to get the maximum contract. Other ways to obtain the max contract including making the All-NBA team consistently. This is in the CBA called the designated player exception.
 
@@ -493,7 +498,7 @@ The designated player exception: Applies to players that have 7 to 9 years of NB
 The requirements also are that the player must make two All-NBA teams or win defensive player of the year or MVP 3 years prior to signing the deal. We can see defensive player of the year salary is well above average Joe as well.
 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-36-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-37-1.png)<!-- -->
 
   [CBA](https://www.foxsports.com/nba/story/nba-6-important-aspects-of-the-new-collective-bargaining-agreement-122016) - Explaining the collective bargaining agreement and different contract rules.
 
@@ -513,11 +518,11 @@ We can see that MVPs make more money than players that win defensive player of t
 
 *All-NBA and All-Defensive teams*
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-38-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-39-1.png)<!-- -->
 
 For All-NBA teams I looked at salary plotted with ppg and assists.  The All-NBA team voting is widely evaluated by the media on a player’s offensive statistics and number wins.  Since, the removal of the center position in the voting ballots a lot of these awards go to forwards and guards now.  
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-39-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-40-1.png)<!-- -->
 
 For the all-defense team I chose to plot salary with total rebounds and steals.  Guards being able to easily get steals and big men being able to easily get rebounds.  Of course, since this is a media chosen award, there are other non-measurable statistics on defense.   For example, Bruce Bowen, Raja Bell, Avery Bradley and Shane Battier all considered good role players might not even grab a single rebound or make a single steal, but they are able to hold the opposing player to a lower shooting percentage.  Thus, the all-defensive team might comprise of only a few role players in the award listing.  
 
@@ -565,7 +570,7 @@ Before the 2011 CBA the mid-level exception was tied to salary cap. It was the a
 
 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-43-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-44-1.png)<!-- -->
 
 Data online for players signed by the mid-level exception wasn’t available for the last 19 seasons. What I wanted to analyze with the mid-level exception was what players each year teams could potentially sign with the mid- level exception when they were near the salary cap. The mid-level exception line above was created by taking the mid-level exception each year and selecting players whose salaries were 25 percent lower or above this mid-level exception salary number. While, of course there could be players who will be willing to take a massive pay cut to play for certain teams, this isn’t something that normally would happen on average. (David West rejected 12.5 million dollars a year to accept the veteran’s minimum with the Spurs.)
 
@@ -619,7 +624,7 @@ I then wanted to test for multicollinearity, so I ran a correlation test to see 
 ## NumYears  0.08  0.41  0.51  0.51  0.38     0.54     1.00
 ```
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-46-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-47-1.png)<!-- -->
 
 If the correlations between two explanatory variables was above 0.8 there would be a high chance of multicollinearity in the model. Field goal and points per game had a correlation of 0.99, while minutes per game, field goals and points per game had a 0.9 correlation. But before just removing these variables from the model I used a variance of inflation factor test from the cars package.  
 
@@ -676,7 +681,7 @@ To check if the error terms were normally distributed, I ran a plot of the model
 
 To fix this I ran a Box Cox Transformation.  Where I chose a lamda of 0.2 based off the graph. 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-48-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-49-1.png)<!-- -->
 
 I chose a lamba of 0.2 to transform salary when looking at this chart.
 
@@ -715,11 +720,11 @@ For the box-cox transformation model the adjusted R-squared was 0.5496 which was
 
 Using plot() the new model shows that heteroscedasticity was fixed.  Our new R squared (0.5496) vs old (0.5287).  
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-2.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-3.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-50-4.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-51-1.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-51-2.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-51-3.png)<!-- -->![](nba_salary_final_report_files/figure-html/unnamed-chunk-51-4.png)<!-- -->
 
 If we look at the first plot. As X increases the errors don’t increase but stay relatively constant. Normal QQ shows the that it almost falls on the line, this tells us that our errors look normally distributed.  I double check this with a histogram below. 
 
-![](nba_salary_final_report_files/figure-html/unnamed-chunk-51-1.png)<!-- -->
+![](nba_salary_final_report_files/figure-html/unnamed-chunk-52-1.png)<!-- -->
 
 When running the model with the test data (2015-2018), the R squared got worst and dropped to 0.44, while the RMSE went up.   This was kind of expected due to the 2017 CBA and expansion of the television contracts leading up to this agreement.  
 

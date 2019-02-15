@@ -1473,6 +1473,18 @@ colnames(dflosing)[1] <- "Salary Lose"
 cbind(dfwinning,dflosing)
 ```
 
+If we take a look at the 65-win 2018 Houston Rockets, we can see this type of salary spread where 1-3 players on the team are taking most of the team’s salary cap.  
+
+```{r echo = FALSE}
+hou2018<-data %>% filter(team == "HOU" & PlayerYear == 2018)
+
+hou2018 %>% ggplot(aes(name,salary)) + 
+  geom_bar(stat = "identity", fill = rainbow(n=length(hou2018$name))) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("2018 Houston Rocket Salary Spread")
+```
+
+
 Benefits:
 
     Signing with a losing team usually has more cap space and thus could sign a better deal for the player.  
